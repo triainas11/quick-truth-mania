@@ -71,41 +71,48 @@ export const useGameLogic = () => {
   const answerLockRef = useRef<{ playerId: 1 | 2; answer: boolean } | null>(null);
 
   const initializeGame = useCallback((settings: GameSettings) => {
+    console.log("Initializing game with settings:", settings);
     resetQuestionHistory(); // Reset question history for new game
     const questions = getRandomQuestions(settings.rounds + 3, settings.category === 'all' ? undefined : settings.category); // Extra questions for potential tiebreakers
     
-    setGameState(prev => ({
-      ...prev,
-      settings,
-      totalRounds: settings.rounds,
-      questions,
-      currentRound: 0,
-      roundsPlayed: 0,
-      players: [
-        { 
-          id: 1, 
-          name: "Player 1", 
-          score: 0,
-          lives: settings.scoreMode === 'lives' ? settings.maxLives : undefined
-        },
-        { 
-          id: 2, 
-          name: "Player 2", 
-          score: 0,
-          lives: settings.scoreMode === 'lives' ? settings.maxLives : undefined
-        }
-      ],
-      currentQuestion: null,
-      winner: null,
-      isActive: false,
-      lastAnswer: null,
-      gamePhase: 'playing',
-      isTiebreaker: false
-    }));
+    setGameState(prev => {
+      const newState = {
+        ...prev,
+        settings,
+        totalRounds: settings.rounds,
+        questions,
+        currentRound: 0,
+        roundsPlayed: 0,
+        players: [
+          { 
+            id: 1 as const, 
+            name: "Player 1", 
+            score: 0,
+            lives: settings.scoreMode === 'lives' ? settings.maxLives : undefined
+          },
+          { 
+            id: 2 as const, 
+            name: "Player 2", 
+            score: 0,
+            lives: settings.scoreMode === 'lives' ? settings.maxLives : undefined
+          }
+        ] as [Player, Player],
+        currentQuestion: null,
+        winner: null,
+        isActive: false,
+        lastAnswer: null,
+        gamePhase: 'playing' as const,
+        isTiebreaker: false
+      };
+      console.log("New game state after initialization:", newState);
+      return newState;
+    });
   }, []);
 
   const startRound = useCallback(() => {
+    console.log("startRound called - currentRound:", gameState.currentRound, "questions.length:", gameState.questions.length);
     if (gameState.currentRound >= gameState.questions.length) {
+      console.log("No more questions, calling endGame");
       endGame();
       return;
     }
@@ -286,6 +293,7 @@ export const useGameLogic = () => {
   }, [gameState.questions, gameState.currentRound]);
 
   const endGame = useCallback(() => {
+    console.log("endGame called, current gameState:", gameState);
     const [player1, player2] = gameState.players;
     let winner: Player | null = null;
     
@@ -302,6 +310,8 @@ export const useGameLogic = () => {
       }
       // winner stays null for ties
     }
+
+    console.log("endGame setting winner:", winner, "scores:", player1.score, player2.score);
 
     setGameState(prev => ({
       ...prev,

@@ -138,7 +138,9 @@ class QuestionSelector {
 const questionSelector = new QuestionSelector();
 
 export const getRandomQuestions = (count: number, category?: string): Question[] => {
-  return questionSelector.selectQuestions(count, category);
+  const questions = questionSelector.selectQuestions(count, category);
+  console.log("getRandomQuestions called:", { count, category, returnedQuestions: questions.length });
+  return questions;
 };
 
 export const resetQuestionHistory = () => {
