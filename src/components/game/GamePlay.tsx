@@ -203,17 +203,17 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
         </div>
       </div>
 
-      {/* Question Overlay */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="bg-background/95 backdrop-blur-sm border-2 border-primary rounded-2xl p-8 max-w-4xl mx-4 shadow-glow">
+      {/* Question Display */}
+      <div className="absolute top-32 left-1/2 transform -translate-x-1/2 z-10 pointer-events-none">
+        <div className="bg-background/95 backdrop-blur-sm border-2 border-primary rounded-2xl p-6 max-w-3xl mx-4 shadow-glow">
           <div className="text-center">
-            <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight">
+            <h2 className="text-2xl md:text-4xl font-black mb-2 leading-tight">
               {currentQuestion.statement}
             </h2>
             
             {lastAnswer && (
               <div className={cn(
-                "text-2xl font-bold mt-4 animate-bounce",
+                "text-xl font-bold mt-2 animate-bounce",
                 lastAnswer.correct ? "text-secondary" : "text-destructive"
               )}>
                 {lastAnswer.correct ? "CORRECT! 🎉" : "WRONG! 💥"}

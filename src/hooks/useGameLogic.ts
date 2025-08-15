@@ -144,11 +144,11 @@ export const useGameLogic = () => {
         timerRef.current = null;
       }
 
-      // Auto advance to next round after showing result
+      // Show result for 2 seconds, then wait for manual next round
       setTimeout(() => {
         setGameState(prev => ({
           ...prev,
-          currentRound: prev.currentRound + 1
+          currentQuestion: null
         }));
       }, 2000);
     }
