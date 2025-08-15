@@ -110,23 +110,29 @@ export const useGameLogic = () => {
   }, []);
 
   const startRound = useCallback(() => {
-    console.log("startRound called - currentRound:", gameState.currentRound, "questions.length:", gameState.questions.length);
-    if (gameState.currentRound >= gameState.questions.length) {
-      console.log("No more questions, calling endGame");
-      endGame();
-      return;
-    }
+    setGameState(prev => {
+      console.log("startRound called - currentRound:", prev.currentRound, "questions.length:", prev.questions.length);
+      
+      if (prev.currentRound >= prev.questions.length) {
+        console.log("No more questions, calling endGame");
+        // Don't call endGame here, just return current state - handle this in the component
+        return {
+          ...prev,
+          gamePhase: 'gameEnd' as const
+        };
+      }
 
-    const question = gameState.questions[gameState.currentRound];
-    
-    setGameState(prev => ({
-      ...prev,
-      currentQuestion: question,
-      timeLeft: prev.settings.timeLimit,
-      isActive: true,
-      lastAnswer: null,
-      gamePhase: 'playing'
-    }));
+      const question = prev.questions[prev.currentRound];
+      
+      return {
+        ...prev,
+        currentQuestion: question,
+        timeLeft: prev.settings.timeLimit,
+        isActive: true,
+        lastAnswer: null,
+        gamePhase: 'playing' as const
+      };
+    });
 
     answerLockRef.current = null;
 
@@ -140,7 +146,7 @@ export const useGameLogic = () => {
             ...prev,
             timeLeft: 0,
             isActive: false,
-            gamePhase: 'roundEnd',
+            gamePhase: 'roundEnd' as const,
             lastAnswer: {
               playerId: 1, // Arbitrary since both failed
               answer: false,
@@ -155,7 +161,7 @@ export const useGameLogic = () => {
         };
       });
     }, 1000);
-  }, [gameState.currentRound, gameState.questions]);
+  }, []);
 
   const submitAnswer = useCallback((playerId: 1 | 2, answer: boolean) => {
     if (!gameState.isActive || !gameState.currentQuestion) return;
