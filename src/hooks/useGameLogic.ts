@@ -208,7 +208,7 @@ export const useGameLogic = () => {
               };
             }
           } else if (newRoundsPlayed >= prev.totalRounds) {
-            // Check for tie
+            // Game completed, check for winner or tie
             const [player1, player2] = prev.players;
             if (player1.score === player2.score) {
               return {
