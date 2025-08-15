@@ -142,6 +142,42 @@ export const useGameLogic = () => {
         if (prev.timeLeft <= 1) {
           // Time's up - both players get it wrong
           clearInterval(timerRef.current!);
+          
+          // Auto advance after showing feedback
+          setTimeout(() => {
+            setGameState(prevState => {
+              const newRoundsPlayed = prevState.roundsPlayed + 1;
+              
+              // Check if we've completed all rounds (only for points mode)
+              if (prevState.settings.scoreMode === 'points' && newRoundsPlayed >= prevState.totalRounds) {
+                const [player1, player2] = prevState.players;
+                if (player1.score === player2.score) {
+                  return {
+                    ...prevState,
+                    isTiebreaker: true,
+                    gamePhase: 'tiebreaker'
+                  };
+                } else {
+                  const winner = player1.score > player2.score ? player1 : player2;
+                  return {
+                    ...prevState,
+                    winner,
+                    gamePhase: 'gameEnd'
+                  };
+                }
+              }
+
+              // Continue to next round
+              return {
+                ...prevState,
+                currentRound: prevState.currentRound + 1,
+                roundsPlayed: newRoundsPlayed,
+                currentQuestion: null,
+                gamePhase: 'playing'
+              };
+            });
+          }, 2000); // Show feedback for 2 seconds
+          
           return {
             ...prev,
             timeLeft: 0,
