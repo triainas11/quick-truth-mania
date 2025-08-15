@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Gamepad2, Users, Timer, Zap } from "lucide-react";
+import { Gamepad2, Users, Timer, Zap, Trophy, Heart } from "lucide-react";
 import { GameSettings } from "@/hooks/useGameLogic";
 import { categories } from "@/data/questions";
 
@@ -16,7 +16,9 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
     rounds: 5,
     category: 'general',
     gameMode: 'normal',
-    timeLimit: 10
+    timeLimit: 10,
+    scoreMode: 'points',
+    maxLives: 3
   });
 
   const handleStart = () => {
@@ -117,6 +119,49 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
             </div>
           </div>
 
+            {/* Score Mode */}
+            <div>
+              <label className="text-lg font-semibold mb-3 block">Score Mode</label>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant={settings.scoreMode === 'points' ? 'default' : 'outline'}
+                  onClick={() => setSettings({...settings, scoreMode: 'points'})}
+                  className="p-4 h-auto flex flex-col"
+                >
+                  <Trophy className="w-6 h-6 mb-2" />
+                  <span className="font-bold">Points Mode</span>
+                  <span className="text-sm opacity-75">+1 correct, -1 wrong</span>
+                </Button>
+                <Button
+                  variant={settings.scoreMode === 'lives' ? 'default' : 'outline'}
+                  onClick={() => setSettings({...settings, scoreMode: 'lives'})}
+                  className="p-4 h-auto flex flex-col"
+                >
+                  <Heart className="w-6 h-6 mb-2" />
+                  <span className="font-bold">Lives Mode</span>
+                  <span className="text-sm opacity-75">Lose life on wrong answer</span>
+                </Button>
+              </div>
+            </div>
+
+            {settings.scoreMode === 'lives' && (
+              <div>
+                <label className="text-lg font-semibold mb-3 block">Starting Lives</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[3, 5, 7].map((lives) => (
+                    <Button
+                      key={lives}
+                      variant={settings.maxLives === lives ? 'default' : 'outline'}
+                      onClick={() => setSettings({...settings, maxLives: lives})}
+                      className="p-4 text-lg font-bold"
+                    >
+                      {lives} ❤️
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
           {/* Game Info */}
           <div className="bg-muted/50 p-4 rounded-lg">
             <h3 className="font-semibold mb-2 flex items-center gap-2">
@@ -127,7 +172,7 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
               <Badge variant="secondary">{settings.rounds} rounds</Badge>
               <Badge variant="secondary">{categories[settings.category as keyof typeof categories] || 'All Categories'}</Badge>
               <Badge variant="secondary">{settings.timeLimit}s per question</Badge>
-              <Badge variant="secondary">{settings.gameMode} mode</Badge>
+              <Badge variant="secondary">{settings.scoreMode === 'lives' ? `${settings.maxLives} lives` : 'points'}</Badge>
             </div>
           </div>
 
