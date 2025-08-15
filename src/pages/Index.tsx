@@ -50,13 +50,15 @@ const Index = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button variant="hero" size="lg" className="text-xl px-8 py-4">
-              <Download className="mr-2" />
-              Download Free Now
+            <Button variant="hero" size="lg" className="text-xl px-8 py-4" asChild>
+              <a href="/game">
+                <Play className="mr-2" />
+                Play Now!
+              </a>
             </Button>
             <Button variant="game" size="lg" className="text-xl px-8 py-4">
-              <Play className="mr-2" />
-              Watch Trailer
+              <Download className="mr-2" />
+              Download Free
             </Button>
           </div>
         </div>
@@ -203,9 +205,11 @@ const Index = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Button variant="action" size="lg" className="text-2xl px-12 py-6">
-                <Download className="mr-3 w-6 h-6" />
-                GET QUICK TRUTH FREE
+              <Button variant="action" size="lg" className="text-2xl px-12 py-6" asChild>
+                <a href="/game">
+                  <Play className="mr-3 w-6 h-6" />
+                  PLAY QUICK TRUTH NOW
+                </a>
               </Button>
             </div>
             
