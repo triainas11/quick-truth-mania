@@ -197,7 +197,7 @@ export const useGameLogic = () => {
         setGameState(prev => {
           const newRoundsPlayed = prev.roundsPlayed + 1;
           
-          // Check if game should end
+          // Check if game should end based on lives mode
           if (prev.settings.scoreMode === 'lives') {
             const alivePlayers = prev.players.filter(p => (p.lives || 0) > 0);
             if (alivePlayers.length === 1) {
@@ -207,8 +207,10 @@ export const useGameLogic = () => {
                 gamePhase: 'gameEnd'
               };
             }
-          } else if (newRoundsPlayed >= prev.totalRounds) {
-            // Game completed, check for winner or tie
+          }
+
+          // Check if we've completed all rounds (only for points mode)
+          if (prev.settings.scoreMode === 'points' && newRoundsPlayed >= prev.totalRounds) {
             const [player1, player2] = prev.players;
             if (player1.score === player2.score) {
               return {
@@ -226,6 +228,7 @@ export const useGameLogic = () => {
             }
           }
 
+          // Continue to next round
           return {
             ...prev,
             currentRound: prev.currentRound + 1,
