@@ -206,7 +206,17 @@ export const useGameLogic = () => {
     if (!answerLockRef.current) {
       answerLockRef.current = { playerId, answer };
       
-      const correct = answer === gameState.currentQuestion.answer;
+      // Check if we're in reverse logic mode (fakeout)
+      const isReverseLogic = gameState.settings.gameMode === 'fakeout';
+      let correct: boolean;
+      
+      if (isReverseLogic) {
+        // In reverse logic mode, wrong answer is correct
+        correct = answer !== gameState.currentQuestion.answer;
+      } else {
+        // Normal mode
+        correct = answer === gameState.currentQuestion.answer;
+      }
       
       setGameState(prev => {
         const newPlayers = [...prev.players] as [Player, Player];
