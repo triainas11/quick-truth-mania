@@ -28,9 +28,9 @@ const Index = () => {
         <div className="relative z-10 text-center px-4 max-w-6xl mx-auto">
           <div className="flex justify-center mb-8">
             <img 
-              src={quickTruthIcon} 
-              alt="Quick Truth Game Icon" 
-              className="w-32 h-32 rounded-3xl shadow-glow animate-bounce-gentle"
+              src="/lovable-uploads/b3c41c93-cae0-4257-9c59-02cef3f6235a.png" 
+              alt="YES OR NO Game Logo" 
+              className="w-64 h-auto shadow-glow animate-bounce-gentle"
             />
           </div>
           
