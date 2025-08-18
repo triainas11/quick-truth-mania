@@ -86,7 +86,7 @@ const questionPool: Question[] = [
   { id: "gen_023", statement: "Russia is the largest country by land area", answer: true, category: "general", difficulty: "medium" },
   { id: "gen_024", statement: "The Amazon River is longer than the Nile", answer: false, category: "general", difficulty: "medium" },
   { id: "gen_025", statement: "Africa has 54 countries", answer: true, category: "general", difficulty: "medium" },
-  
+
   // Additional General Knowledge Questions
   { id: "gen_026", statement: "The capital of Australia is Sydney", answer: false, category: "general", difficulty: "easy" },
   { id: "gen_027", statement: "The Eiffel Tower can be found in Paris", answer: true, category: "general", difficulty: "easy" },
@@ -116,6 +116,18 @@ const questionPool: Question[] = [
   { id: "weird_012", statement: "Bananas grow on trees", answer: false, category: "weird_facts", difficulty: "medium" },
   { id: "weird_013", statement: "Sloths take more than a month to digest one leaf", answer: true, category: "weird_facts", difficulty: "hard" },
   { id: "weird_014", statement: "Anyone has ever landed on Mars", answer: false, category: "weird_facts", difficulty: "medium" },
+
+  // Misleading Questions for "Misleading" Mode
+  { id: "mislead_001", statement: "Is it false that the sun doesn't rise in the west?", answer: true, category: "misleading", difficulty: "medium" },
+  { id: "mislead_002", statement: "Water doesn't freeze at temperatures above 0°C, correct?", answer: true, category: "misleading", difficulty: "medium" },
+  { id: "mislead_003", statement: "It's not true that fish don't breathe underwater, right?", answer: false, category: "misleading", difficulty: "medium" },
+  { id: "mislead_004", statement: "Isn't it incorrect to say that cats don't meow?", answer: true, category: "misleading", difficulty: "medium" },
+  { id: "mislead_005", statement: "You wouldn't agree that snow isn't cold, would you?", answer: false, category: "misleading", difficulty: "medium" },
+  { id: "mislead_006", statement: "The Earth doesn't orbit around the sun - false statement?", answer: true, category: "misleading", difficulty: "hard" },
+  { id: "mislead_007", statement: "It's untrue that humans don't have two lungs, isn't it?", answer: true, category: "misleading", difficulty: "hard" },
+  { id: "mislead_008", statement: "Would you say it's wrong that elephants can't fly?", answer: false, category: "misleading", difficulty: "medium" },
+  { id: "mislead_009", statement: "Isn't it false that the moon is not made of cheese?", answer: false, category: "misleading", difficulty: "hard" },
+  { id: "mislead_010", statement: "You can't say that dogs don't bark, can you?", answer: false, category: "misleading", difficulty: "medium" },
 
   // Trick Questions
   { id: "trick_001", statement: "This statement is false", answer: false, category: "general", difficulty: "hard" },

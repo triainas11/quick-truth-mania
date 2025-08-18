@@ -1,20 +1,24 @@
 import { useState, useCallback, useRef } from 'react';
 import { Question, getRandomQuestions, resetQuestionHistory } from '@/data/questions';
+import { soundEffects } from '@/utils/soundEffects';
 
 export interface Player {
   id: 1 | 2;
   name: string;
   score: number;
   lives?: number;
+  streak: number;
 }
 
 export interface GameSettings {
   rounds: number;
   category: string;
-  gameMode: 'normal' | 'speed' | 'fakeout';
+  gameMode: 'normal' | 'speed' | 'fakeout' | 'double-speed' | 'misleading';
   timeLimit: number;
   scoreMode: 'points' | 'lives';
   maxLives: number;
+  streakBonus: boolean;
+  soundEffects: boolean;
 }
 
 export interface LastAnswer {
@@ -43,8 +47,8 @@ export interface GameState {
 export const useGameLogic = () => {
   const [gameState, setGameState] = useState<GameState>({
     players: [
-      { id: 1, name: "Player 1", score: 0 },
-      { id: 2, name: "Player 2", score: 0 }
+      { id: 1, name: "Player 1", score: 0, streak: 0 },
+      { id: 2, name: "Player 2", score: 0, streak: 0 }
     ],
     currentQuestion: null,
     currentRound: 0,
@@ -60,7 +64,9 @@ export const useGameLogic = () => {
       gameMode: 'normal',
       timeLimit: 10,
       scoreMode: 'points',
-      maxLives: 3
+      maxLives: 3,
+      streakBonus: true,
+      soundEffects: true
     },
     gamePhase: 'setup',
     roundsPlayed: 0,
@@ -73,13 +79,19 @@ export const useGameLogic = () => {
   const initializeGame = useCallback((settings: GameSettings) => {
     console.log("Initializing game with settings:", settings);
     resetQuestionHistory(); // Reset question history for new game
-    const questions = getRandomQuestions(settings.rounds + 3, settings.category === 'all' ? undefined : settings.category); // Extra questions for potential tiebreakers
+    
+    // Auto-set time limit for double-speed mode
+    const finalSettings = settings.gameMode === 'double-speed' 
+      ? { ...settings, timeLimit: 3 }
+      : settings;
+    
+    const questions = getRandomQuestions(finalSettings.rounds + 3, finalSettings.category === 'all' ? undefined : finalSettings.category); // Extra questions for potential tiebreakers
     
     setGameState(prev => {
       const newState = {
         ...prev,
-        settings,
-        totalRounds: settings.rounds,
+        settings: finalSettings,
+        totalRounds: finalSettings.rounds,
         questions,
         currentRound: 0,
         roundsPlayed: 0,
@@ -88,13 +100,15 @@ export const useGameLogic = () => {
             id: 1 as const, 
             name: "Player 1", 
             score: 0,
-            lives: settings.scoreMode === 'lives' ? settings.maxLives : undefined
+            streak: 0,
+            lives: finalSettings.scoreMode === 'lives' ? finalSettings.maxLives : undefined
           },
           { 
             id: 2 as const, 
             name: "Player 2", 
             score: 0,
-            lives: settings.scoreMode === 'lives' ? settings.maxLives : undefined
+            streak: 0,
+            lives: finalSettings.scoreMode === 'lives' ? finalSettings.maxLives : undefined
           }
         ] as [Player, Player],
         currentQuestion: null,
@@ -206,33 +220,73 @@ export const useGameLogic = () => {
     if (!answerLockRef.current) {
       answerLockRef.current = { playerId, answer };
       
-      // Check if we're in reverse logic mode (fakeout)
+      // Check if we're in reverse logic mode (fakeout) or misleading mode
       const isReverseLogic = gameState.settings.gameMode === 'fakeout';
+      const isMisleadingMode = gameState.settings.gameMode === 'misleading';
       let correct: boolean;
       
       if (isReverseLogic) {
         // In reverse logic mode, wrong answer is correct
         correct = answer !== gameState.currentQuestion.answer;
+      } else if (isMisleadingMode) {
+        // Misleading mode uses questions from "misleading" category with complex phrasing
+        correct = answer === gameState.currentQuestion.answer;
       } else {
         // Normal mode
         correct = answer === gameState.currentQuestion.answer;
       }
       
+      // Play sound effects
+      if (gameState.settings.soundEffects) {
+        soundEffects.setSoundEnabled(true);
+        if (correct) {
+          soundEffects.playCorrect();
+        } else {
+          soundEffects.playWrong();
+        }
+      }
+      
       setGameState(prev => {
         const newPlayers = [...prev.players] as [Player, Player];
         const playerIndex = playerId - 1;
+        const otherPlayerIndex = playerIndex === 0 ? 1 : 0;
         
         if (prev.settings.scoreMode === 'lives') {
           if (!correct) {
             newPlayers[playerIndex].lives = Math.max(0, (newPlayers[playerIndex].lives || 0) - 1);
+            newPlayers[playerIndex].streak = 0; // Reset streak on wrong answer
+          } else {
+            newPlayers[playerIndex].streak += 1;
+            // Check for streak bonus (5+ correct in a row)
+            if (prev.settings.streakBonus && newPlayers[playerIndex].streak >= 5 && newPlayers[playerIndex].streak % 5 === 0) {
+              if (prev.settings.soundEffects) {
+                soundEffects.playStreak();
+              }
+            }
           }
+          // Reset other player's streak
+          newPlayers[otherPlayerIndex].streak = 0;
         } else {
           // Points mode
           if (correct) {
-            newPlayers[playerIndex].score += 1;
+            let pointsToAdd = 1;
+            newPlayers[playerIndex].streak += 1;
+            
+            // Streak bonus: extra point for every 5 in a row
+            if (prev.settings.streakBonus && newPlayers[playerIndex].streak >= 5 && newPlayers[playerIndex].streak % 5 === 0) {
+              pointsToAdd += 1; // Bonus point
+              if (prev.settings.soundEffects) {
+                soundEffects.playStreak();
+              }
+            }
+            
+            newPlayers[playerIndex].score += pointsToAdd;
           } else {
             newPlayers[playerIndex].score = Math.max(0, newPlayers[playerIndex].score - 1);
+            newPlayers[playerIndex].streak = 0; // Reset streak on wrong answer
           }
+          // Reset other player's streak
+          newPlayers[otherPlayerIndex].streak = 0;
         }
 
         return {
@@ -395,12 +449,14 @@ export const useGameLogic = () => {
           id: 1, 
           name: "Player 1", 
           score: 0,
+          streak: 0,
           lives: prev.settings.scoreMode === 'lives' ? prev.settings.maxLives : undefined
         },
         { 
           id: 2, 
           name: "Player 2", 
           score: 0,
+          streak: 0,
           lives: prev.settings.scoreMode === 'lives' ? prev.settings.maxLives : undefined
         }
       ],

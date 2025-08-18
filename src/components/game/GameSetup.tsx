@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Gamepad2, Users, Timer, Zap, Trophy, Heart } from "lucide-react";
+import { Gamepad2, Users, Timer, Zap, Trophy, Heart, Volume2, Flame, Shuffle } from "lucide-react";
 import { GameSettings } from "@/hooks/useGameLogic";
 import { categories } from "@/data/questions";
 
@@ -18,7 +18,9 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
     gameMode: 'normal',
     timeLimit: 10,
     scoreMode: 'points',
-    maxLives: 3
+    maxLives: 3,
+    streakBonus: true,
+    soundEffects: true
   });
 
   const handleStart = () => {
@@ -44,11 +46,13 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
           {/* Game Mode */}
           <div>
             <label className="text-lg font-semibold mb-3 block">Game Mode</label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
                 { id: 'normal', name: 'Normal', icon: Users, desc: 'Standard gameplay' },
                 { id: 'speed', name: 'Speed', icon: Zap, desc: 'Faster questions' },
-                { id: 'fakeout', name: 'Fake-Out', icon: Timer, desc: 'Reverse logic twists' }
+                { id: 'double-speed', name: 'Double Speed', icon: Timer, desc: '3 seconds per question' },
+                { id: 'fakeout', name: 'Fake-Out', icon: Shuffle, desc: 'Reverse logic twists' },
+                { id: 'misleading', name: 'Misleading', icon: Flame, desc: 'Confusing question phrasing' }
               ].map((mode) => (
                 <Button
                   key={mode.id}
@@ -106,17 +110,23 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
           <div>
             <label className="text-lg font-semibold mb-3 block">Time Per Question</label>
             <div className="flex gap-2">
-              {[5, 10, 15, 20].map((time) => (
+              {(settings.gameMode === 'double-speed' ? [3] : [5, 10, 15, 20]).map((time) => (
                 <Button
                   key={time}
                   variant={settings.timeLimit === time ? 'default' : 'outline'}
                   onClick={() => setSettings(prev => ({ ...prev, timeLimit: time }))}
                   className="flex-1"
+                  disabled={settings.gameMode === 'double-speed' && time !== 3}
                 >
                   {time}s
                 </Button>
               ))}
             </div>
+            {settings.gameMode === 'double-speed' && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Double Speed mode is locked to 3 seconds per question
+              </p>
+            )}
           </div>
 
             {/* Score Mode */}
@@ -162,6 +172,31 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
               </div>
             )}
 
+          {/* Advanced Settings */}
+          <div>
+            <label className="text-lg font-semibold mb-3 block">Advanced Settings</label>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant={settings.streakBonus ? 'default' : 'outline'}
+                onClick={() => setSettings(prev => ({ ...prev, streakBonus: !prev.streakBonus }))}
+                className="p-4 h-auto flex flex-col"
+              >
+                <Flame className="w-6 h-6 mb-2" />
+                <span className="font-bold">Streak Bonus</span>
+                <span className="text-xs opacity-75">Extra points for 5+ in a row</span>
+              </Button>
+              <Button
+                variant={settings.soundEffects ? 'default' : 'outline'}
+                onClick={() => setSettings(prev => ({ ...prev, soundEffects: !prev.soundEffects }))}
+                className="p-4 h-auto flex flex-col"
+              >
+                <Volume2 className="w-6 h-6 mb-2" />
+                <span className="font-bold">Sound Effects</span>
+                <span className="text-xs opacity-75">Audio feedback & vibration</span>
+              </Button>
+            </div>
+          </div>
+
           {/* Game Info */}
           <div className="bg-muted/50 p-4 rounded-lg">
             <h3 className="font-semibold mb-2 flex items-center gap-2">
@@ -173,6 +208,8 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
               <Badge variant="secondary">{categories[settings.category as keyof typeof categories] || 'All Categories'}</Badge>
               <Badge variant="secondary">{settings.timeLimit}s per question</Badge>
               <Badge variant="secondary">{settings.scoreMode === 'lives' ? `${settings.maxLives} lives` : 'points'}</Badge>
+              {settings.streakBonus && <Badge variant="outline">Streak Bonus</Badge>}
+              {settings.soundEffects && <Badge variant="outline">Sound Effects</Badge>}
             </div>
           </div>
 
