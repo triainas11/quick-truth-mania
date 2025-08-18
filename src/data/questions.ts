@@ -87,6 +87,36 @@ const questionPool: Question[] = [
   { id: "gen_024", statement: "The Amazon River is longer than the Nile", answer: false, category: "general", difficulty: "medium" },
   { id: "gen_025", statement: "Africa has 54 countries", answer: true, category: "general", difficulty: "medium" },
   
+  // Additional General Knowledge Questions
+  { id: "gen_026", statement: "The capital of Australia is Sydney", answer: false, category: "general", difficulty: "easy" },
+  { id: "gen_027", statement: "The Eiffel Tower can be found in Paris", answer: true, category: "general", difficulty: "easy" },
+  { id: "gen_028", statement: "Mount Everest is the tallest mountain in the world", answer: true, category: "general", difficulty: "easy" },
+  { id: "gen_029", statement: "Humans have four lungs", answer: false, category: "general", difficulty: "easy" },
+
+  // Additional Pop Culture Questions
+  { id: "pop_011", statement: "Lady Gaga starred in the film 'A Star Is Born'", answer: true, category: "pop_culture", difficulty: "easy" },
+  { id: "pop_012", statement: "Hogwarts is the school in The Lord of the Rings", answer: false, category: "pop_culture", difficulty: "easy" },
+  { id: "pop_013", statement: "Stranger Things is set in the 1980s", answer: true, category: "pop_culture", difficulty: "easy" },
+  { id: "pop_014", statement: "Beyoncé released an album called 'Lemonade'", answer: true, category: "pop_culture", difficulty: "easy" },
+
+  // Additional Science Questions
+  { id: "sci_011", statement: "Water is made up of hydrogen and oxygen", answer: true, category: "science", difficulty: "easy" },
+  { id: "sci_012", statement: "The Sun orbits around the Earth", answer: false, category: "science", difficulty: "easy" },
+  { id: "sci_013", statement: "Lightning is hotter than the surface of the Sun", answer: true, category: "science", difficulty: "medium" },
+  { id: "sci_014", statement: "Penguins live naturally at the North Pole", answer: false, category: "science", difficulty: "medium" },
+
+  // Additional Kids Mode Questions
+  { id: "kid_011", statement: "A triangle is a shape with three sides", answer: true, category: "kids", difficulty: "easy" },
+  { id: "kid_012", statement: "Elephants can fly in real life", answer: false, category: "kids", difficulty: "easy" },
+  { id: "kid_013", statement: "The moon is made of cheese", answer: false, category: "kids", difficulty: "easy" },
+  { id: "kid_014", statement: "Pluto is smaller than Earth's moon", answer: true, category: "kids", difficulty: "easy" },
+
+  // Additional Weird Facts Questions
+  { id: "weird_011", statement: "Octopuses have three hearts", answer: true, category: "weird_facts", difficulty: "medium" },
+  { id: "weird_012", statement: "Bananas grow on trees", answer: false, category: "weird_facts", difficulty: "medium" },
+  { id: "weird_013", statement: "Sloths take more than a month to digest one leaf", answer: true, category: "weird_facts", difficulty: "hard" },
+  { id: "weird_014", statement: "Anyone has ever landed on Mars", answer: false, category: "weird_facts", difficulty: "medium" },
+
   // Trick Questions
   { id: "trick_001", statement: "This statement is false", answer: false, category: "general", difficulty: "hard" },
   { id: "trick_002", statement: "You are currently reading this", answer: true, category: "general", difficulty: "easy" },
