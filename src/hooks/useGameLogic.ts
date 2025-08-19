@@ -19,6 +19,7 @@ export interface GameSettings {
   maxLives: number;
   streakBonus: boolean;
   soundEffects: boolean;
+  buttonShuffle: boolean;
 }
 
 export interface LastAnswer {
@@ -66,7 +67,8 @@ export const useGameLogic = () => {
       scoreMode: 'points',
       maxLives: 3,
       streakBonus: true,
-      soundEffects: true
+      soundEffects: true,
+      buttonShuffle: false
     },
     gamePhase: 'setup',
     roundsPlayed: 0,
@@ -278,6 +280,11 @@ export const useGameLogic = () => {
               if (prev.settings.soundEffects) {
                 soundEffects.playStreak();
               }
+            }
+            
+            // Button shuffle score multiplier (10% bonus)
+            if (prev.settings.buttonShuffle) {
+              pointsToAdd = Math.ceil(pointsToAdd * 1.1);
             }
             
             newPlayers[playerIndex].score += pointsToAdd;

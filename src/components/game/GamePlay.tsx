@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,22 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
     roundsPlayed,
     isTiebreaker
   } = gameState;
+
+  // Button shuffle state - randomize button positions when shuffle is enabled
+  const [buttonPositions, setButtonPositions] = useState<{ player1: 'yes-first' | 'no-first', player2: 'yes-first' | 'no-first' }>({
+    player1: 'yes-first',
+    player2: 'yes-first'
+  });
+
+  // Shuffle button positions when new question starts (if shuffle is enabled)
+  useEffect(() => {
+    if (settings.buttonShuffle && currentQuestion && isActive) {
+      setButtonPositions({
+        player1: Math.random() < 0.5 ? 'yes-first' : 'no-first',
+        player2: Math.random() < 0.5 ? 'yes-first' : 'no-first'
+      });
+    }
+  }, [currentQuestion, settings.buttonShuffle, isActive]);
 
   useEffect(() => {
     if (gamePhase === 'gameEnd' && !winner && !isTiebreaker) {
@@ -194,37 +210,75 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
           </div>
           
           <div className="space-y-6 w-full max-w-md">
-            <Button
-              onClick={() => onPlayerAnswer(1, true)}
-              disabled={!isActive}
-              variant="action"
-              size="lg"
-              className={cn(
-                "w-full h-24 text-4xl font-black shadow-energy",
-                lastAnswer?.playerId === 1 && lastAnswer?.answer === true && "animate-pulse",
-                lastAnswer?.playerId === 1 && lastAnswer?.correct === true && "bg-secondary",
-                lastAnswer?.playerId === 1 && lastAnswer?.correct === false && "bg-destructive"
-              )}
-            >
-              <Check className="mr-4 w-8 h-8" />
-              YES
-            </Button>
-            
-            <Button
-              onClick={() => onPlayerAnswer(1, false)}
-              disabled={!isActive}
-              variant="destructive"
-              size="lg"
-              className={cn(
-                "w-full h-24 text-4xl font-black",
-                lastAnswer?.playerId === 1 && lastAnswer?.answer === false && "animate-pulse",
-                lastAnswer?.playerId === 1 && lastAnswer?.correct === true && "bg-secondary",
-                lastAnswer?.playerId === 1 && lastAnswer?.correct === false && "bg-destructive"
-              )}
-            >
-              <X className="mr-4 w-8 h-8" />
-              NO
-            </Button>
+            {buttonPositions.player1 === 'yes-first' ? (
+              <>
+                <Button
+                  onClick={() => onPlayerAnswer(1, true)}
+                  disabled={!isActive}
+                  variant="action"
+                  size="lg"
+                  className={cn(
+                    "w-full h-24 text-4xl font-black shadow-energy",
+                    lastAnswer?.playerId === 1 && lastAnswer?.answer === true && "animate-pulse",
+                    lastAnswer?.playerId === 1 && lastAnswer?.correct === true && "bg-secondary",
+                    lastAnswer?.playerId === 1 && lastAnswer?.correct === false && "bg-destructive"
+                  )}
+                >
+                  <Check className="mr-4 w-8 h-8" />
+                  YES
+                </Button>
+                
+                <Button
+                  onClick={() => onPlayerAnswer(1, false)}
+                  disabled={!isActive}
+                  variant="destructive"
+                  size="lg"
+                  className={cn(
+                    "w-full h-24 text-4xl font-black",
+                    lastAnswer?.playerId === 1 && lastAnswer?.answer === false && "animate-pulse",
+                    lastAnswer?.playerId === 1 && lastAnswer?.correct === true && "bg-secondary",
+                    lastAnswer?.playerId === 1 && lastAnswer?.correct === false && "bg-destructive"
+                  )}
+                >
+                  <X className="mr-4 w-8 h-8" />
+                  NO
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => onPlayerAnswer(1, false)}
+                  disabled={!isActive}
+                  variant="destructive"
+                  size="lg"
+                  className={cn(
+                    "w-full h-24 text-4xl font-black",
+                    lastAnswer?.playerId === 1 && lastAnswer?.answer === false && "animate-pulse",
+                    lastAnswer?.playerId === 1 && lastAnswer?.correct === true && "bg-secondary",
+                    lastAnswer?.playerId === 1 && lastAnswer?.correct === false && "bg-destructive"
+                  )}
+                >
+                  <X className="mr-4 w-8 h-8" />
+                  NO
+                </Button>
+                
+                <Button
+                  onClick={() => onPlayerAnswer(1, true)}
+                  disabled={!isActive}
+                  variant="action"
+                  size="lg"
+                  className={cn(
+                    "w-full h-24 text-4xl font-black shadow-energy",
+                    lastAnswer?.playerId === 1 && lastAnswer?.answer === true && "animate-pulse",
+                    lastAnswer?.playerId === 1 && lastAnswer?.correct === true && "bg-secondary",
+                    lastAnswer?.playerId === 1 && lastAnswer?.correct === false && "bg-destructive"
+                  )}
+                >
+                  <Check className="mr-4 w-8 h-8" />
+                  YES
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -238,37 +292,75 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
           </div>
           
           <div className="space-y-6 w-full max-w-md">
-            <Button
-              onClick={() => onPlayerAnswer(2, true)}
-              disabled={!isActive}
-              variant="action"
-              size="lg"
-              className={cn(
-                "w-full h-24 text-4xl font-black shadow-energy",
-                lastAnswer?.playerId === 2 && lastAnswer?.answer === true && "animate-pulse",
-                lastAnswer?.playerId === 2 && lastAnswer?.correct === true && "bg-secondary",
-                lastAnswer?.playerId === 2 && lastAnswer?.correct === false && "bg-destructive"
-              )}
-            >
-              <Check className="mr-4 w-8 h-8" />
-              YES
-            </Button>
-            
-            <Button
-              onClick={() => onPlayerAnswer(2, false)}
-              disabled={!isActive}
-              variant="destructive"
-              size="lg"
-              className={cn(
-                "w-full h-24 text-4xl font-black",
-                lastAnswer?.playerId === 2 && lastAnswer?.answer === false && "animate-pulse",
-                lastAnswer?.playerId === 2 && lastAnswer?.correct === true && "bg-secondary",
-                lastAnswer?.playerId === 2 && lastAnswer?.correct === false && "bg-destructive"
-              )}
-            >
-              <X className="mr-4 w-8 h-8" />
-              NO
-            </Button>
+            {buttonPositions.player2 === 'yes-first' ? (
+              <>
+                <Button
+                  onClick={() => onPlayerAnswer(2, true)}
+                  disabled={!isActive}
+                  variant="action"
+                  size="lg"
+                  className={cn(
+                    "w-full h-24 text-4xl font-black shadow-energy",
+                    lastAnswer?.playerId === 2 && lastAnswer?.answer === true && "animate-pulse",
+                    lastAnswer?.playerId === 2 && lastAnswer?.correct === true && "bg-secondary",
+                    lastAnswer?.playerId === 2 && lastAnswer?.correct === false && "bg-destructive"
+                  )}
+                >
+                  <Check className="mr-4 w-8 h-8" />
+                  YES
+                </Button>
+                
+                <Button
+                  onClick={() => onPlayerAnswer(2, false)}
+                  disabled={!isActive}
+                  variant="destructive"
+                  size="lg"
+                  className={cn(
+                    "w-full h-24 text-4xl font-black",
+                    lastAnswer?.playerId === 2 && lastAnswer?.answer === false && "animate-pulse",
+                    lastAnswer?.playerId === 2 && lastAnswer?.correct === true && "bg-secondary",
+                    lastAnswer?.playerId === 2 && lastAnswer?.correct === false && "bg-destructive"
+                  )}
+                >
+                  <X className="mr-4 w-8 h-8" />
+                  NO
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => onPlayerAnswer(2, false)}
+                  disabled={!isActive}
+                  variant="destructive"
+                  size="lg"
+                  className={cn(
+                    "w-full h-24 text-4xl font-black",
+                    lastAnswer?.playerId === 2 && lastAnswer?.answer === false && "animate-pulse",
+                    lastAnswer?.playerId === 2 && lastAnswer?.correct === true && "bg-secondary",
+                    lastAnswer?.playerId === 2 && lastAnswer?.correct === false && "bg-destructive"
+                  )}
+                >
+                  <X className="mr-4 w-8 h-8" />
+                  NO
+                </Button>
+                
+                <Button
+                  onClick={() => onPlayerAnswer(2, true)}
+                  disabled={!isActive}
+                  variant="action"
+                  size="lg"
+                  className={cn(
+                    "w-full h-24 text-4xl font-black shadow-energy",
+                    lastAnswer?.playerId === 2 && lastAnswer?.answer === true && "animate-pulse",
+                    lastAnswer?.playerId === 2 && lastAnswer?.correct === true && "bg-secondary",
+                    lastAnswer?.playerId === 2 && lastAnswer?.correct === false && "bg-destructive"
+                  )}
+                >
+                  <Check className="mr-4 w-8 h-8" />
+                  YES
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

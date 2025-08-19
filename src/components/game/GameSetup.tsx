@@ -20,7 +20,8 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
     scoreMode: 'points',
     maxLives: 3,
     streakBonus: true,
-    soundEffects: true
+    soundEffects: true,
+    buttonShuffle: false
   });
 
   const handleStart = () => {
@@ -194,6 +195,15 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
                 <span className="font-bold">Sound Effects</span>
                 <span className="text-xs opacity-75">Audio feedback & vibration</span>
               </Button>
+              <Button
+                variant={settings.buttonShuffle ? 'default' : 'outline'}
+                onClick={() => setSettings(prev => ({ ...prev, buttonShuffle: !prev.buttonShuffle }))}
+                className="p-4 h-auto flex flex-col col-span-2"
+              >
+                <Shuffle className="w-6 h-6 mb-2" />
+                <span className="font-bold">Random Button Shuffle</span>
+                <span className="text-xs opacity-75">Buttons change position (+10% score bonus)</span>
+              </Button>
             </div>
           </div>
 
@@ -210,6 +220,7 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
               <Badge variant="secondary">{settings.scoreMode === 'lives' ? `${settings.maxLives} lives` : 'points'}</Badge>
               {settings.streakBonus && <Badge variant="outline">Streak Bonus</Badge>}
               {settings.soundEffects && <Badge variant="outline">Sound Effects</Badge>}
+              {settings.buttonShuffle && <Badge variant="outline">Button Shuffle (+10%)</Badge>}
             </div>
           </div>
 
