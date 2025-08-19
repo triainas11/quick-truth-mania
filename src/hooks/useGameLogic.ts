@@ -13,7 +13,7 @@ export interface Player {
 export interface GameSettings {
   rounds: number;
   category: string;
-  gameMode: 'normal' | 'speed' | 'fakeout' | 'double-speed' | 'misleading';
+  gameMode: 'normal' | 'fakeout' | 'double-speed' | 'misleading';
   timeLimit: number;
   scoreMode: 'points' | 'lives';
   maxLives: number;

@@ -92,30 +92,90 @@ const questionPool: Question[] = [
   { id: "gen_027", statement: "The Eiffel Tower can be found in Paris", answer: true, category: "general", difficulty: "easy" },
   { id: "gen_028", statement: "Mount Everest is the tallest mountain in the world", answer: true, category: "general", difficulty: "easy" },
   { id: "gen_029", statement: "Humans have four lungs", answer: false, category: "general", difficulty: "easy" },
+  
+  // More Additional General Knowledge
+  { id: "gen_030", statement: "Tokyo is the most populated city in the world", answer: true, category: "general", difficulty: "medium" },
+  { id: "gen_031", statement: "The Amazon River is longer than the Nile", answer: false, category: "general", difficulty: "medium" },
+  { id: "gen_032", statement: "Canada is the largest country in the world by area", answer: false, category: "general", difficulty: "medium" },
+  { id: "gen_033", statement: "The Euro currency has coins smaller than 1 cent", answer: false, category: "general", difficulty: "medium" },
+  { id: "gen_034", statement: "Mount Kilimanjaro is located in Tanzania", answer: true, category: "general", difficulty: "medium" },
+  { id: "gen_035", statement: "Shakespeare is the author of The Odyssey", answer: false, category: "general", difficulty: "medium" },
+  { id: "gen_036", statement: "The flag of Switzerland has a cross on it", answer: true, category: "general", difficulty: "easy" },
+  { id: "gen_037", statement: "The Sahara Desert is larger than the country of France", answer: true, category: "general", difficulty: "medium" },
+  { id: "gen_038", statement: "The Great Fire of London was in 1666", answer: true, category: "general", difficulty: "medium" },
+  { id: "gen_039", statement: "Rio de Janeiro is the capital of Brazil", answer: false, category: "general", difficulty: "easy" },
 
   // Additional Pop Culture Questions
   { id: "pop_011", statement: "Lady Gaga starred in the film 'A Star Is Born'", answer: true, category: "pop_culture", difficulty: "easy" },
   { id: "pop_012", statement: "Hogwarts is the school in The Lord of the Rings", answer: false, category: "pop_culture", difficulty: "easy" },
   { id: "pop_013", statement: "Stranger Things is set in the 1980s", answer: true, category: "pop_culture", difficulty: "easy" },
   { id: "pop_014", statement: "Beyoncé released an album called 'Lemonade'", answer: true, category: "pop_culture", difficulty: "easy" },
+  
+  // More Additional Pop Culture
+  { id: "pop_015", statement: "Wakanda is from the Marvel universe", answer: true, category: "pop_culture", difficulty: "easy" },
+  { id: "pop_016", statement: "Elvis Presley became famous in the 1950s", answer: true, category: "pop_culture", difficulty: "medium" },
+  { id: "pop_017", statement: "Breaking Bad is about a chemistry teacher", answer: true, category: "pop_culture", difficulty: "easy" },
+  { id: "pop_018", statement: "Michael Jackson was known as the 'King of Pop'", answer: true, category: "pop_culture", difficulty: "easy" },
+  { id: "pop_019", statement: "Harry Potter's pet owl was named 'Hedwig'", answer: true, category: "pop_culture", difficulty: "easy" },
+  { id: "pop_020", statement: "Monica is a character from How I Met Your Mother", answer: false, category: "pop_culture", difficulty: "medium" },
+  { id: "pop_021", statement: "Pikachu is a character from Pokémon", answer: true, category: "pop_culture", difficulty: "easy" },
+  { id: "pop_022", statement: "Netflix originally started as a DVD rental company", answer: true, category: "pop_culture", difficulty: "medium" },
+  { id: "pop_023", statement: "The song 'Bohemian Rhapsody' is by The Rolling Stones", answer: false, category: "pop_culture", difficulty: "medium" },
+  { id: "pop_024", statement: "The movie Avatar was directed by James Cameron", answer: true, category: "pop_culture", difficulty: "medium" },
 
   // Additional Science Questions
   { id: "sci_011", statement: "Water is made up of hydrogen and oxygen", answer: true, category: "science", difficulty: "easy" },
   { id: "sci_012", statement: "The Sun orbits around the Earth", answer: false, category: "science", difficulty: "easy" },
   { id: "sci_013", statement: "Lightning is hotter than the surface of the Sun", answer: true, category: "science", difficulty: "medium" },
   { id: "sci_014", statement: "Penguins live naturally at the North Pole", answer: false, category: "science", difficulty: "medium" },
+  
+  // More Additional Science
+  { id: "sci_015", statement: "The chemical symbol for gold is 'Au'", answer: true, category: "science", difficulty: "medium" },
+  { id: "sci_016", statement: "Whales breathe through lungs instead of gills", answer: true, category: "science", difficulty: "easy" },
+  { id: "sci_017", statement: "The human brain is made up of more than 70% water", answer: true, category: "science", difficulty: "medium" },
+  { id: "sci_018", statement: "Humans can survive on Mars without a space suit", answer: false, category: "science", difficulty: "easy" },
+  { id: "sci_019", statement: "The speed of light is faster than the speed of sound", answer: true, category: "science", difficulty: "easy" },
+  { id: "sci_020", statement: "Humans have 48 chromosomes", answer: false, category: "science", difficulty: "medium" },
+  { id: "sci_021", statement: "DNA is shaped like a double helix", answer: true, category: "science", difficulty: "medium" },
+  { id: "sci_022", statement: "Gravity pulls objects toward the center of the Earth", answer: true, category: "science", difficulty: "easy" },
+  { id: "sci_023", statement: "Mercury is the only metal that is liquid at room temperature", answer: true, category: "science", difficulty: "medium" },
+  { id: "sci_024", statement: "Pluto is larger than Earth", answer: false, category: "science", difficulty: "easy" },
 
   // Additional Kids Mode Questions
   { id: "kid_011", statement: "A triangle is a shape with three sides", answer: true, category: "kids", difficulty: "easy" },
   { id: "kid_012", statement: "Elephants can fly in real life", answer: false, category: "kids", difficulty: "easy" },
   { id: "kid_013", statement: "The moon is made of cheese", answer: false, category: "kids", difficulty: "easy" },
   { id: "kid_014", statement: "Pluto is smaller than Earth's moon", answer: true, category: "kids", difficulty: "easy" },
+  
+  // More Additional Kids Mode
+  { id: "kid_015", statement: "2 + 2 = 5", answer: false, category: "kids", difficulty: "easy" },
+  { id: "kid_016", statement: "Cats say 'meow'", answer: true, category: "kids", difficulty: "easy" },
+  { id: "kid_017", statement: "The sky is green during the day", answer: false, category: "kids", difficulty: "easy" },
+  { id: "kid_018", statement: "SpongeBob SquarePants is yellow", answer: true, category: "kids", difficulty: "easy" },
+  { id: "kid_019", statement: "Cows give us milk", answer: true, category: "kids", difficulty: "easy" },
+  { id: "kid_020", statement: "Mickey Mouse is a cat", answer: false, category: "kids", difficulty: "easy" },
+  { id: "kid_021", statement: "Trains move on tracks", answer: true, category: "kids", difficulty: "easy" },
+  { id: "kid_022", statement: "The opposite of hot is called cold", answer: true, category: "kids", difficulty: "easy" },
+  { id: "kid_023", statement: "A whale is smaller than a mouse", answer: false, category: "kids", difficulty: "easy" },
+  { id: "kid_024", statement: "Rainbows only have one color", answer: false, category: "kids", difficulty: "easy" },
 
   // Additional Weird Facts Questions
   { id: "weird_011", statement: "Octopuses have three hearts", answer: true, category: "weird_facts", difficulty: "medium" },
   { id: "weird_012", statement: "Bananas grow on trees", answer: false, category: "weird_facts", difficulty: "medium" },
   { id: "weird_013", statement: "Sloths take more than a month to digest one leaf", answer: true, category: "weird_facts", difficulty: "hard" },
   { id: "weird_014", statement: "Anyone has ever landed on Mars", answer: false, category: "weird_facts", difficulty: "medium" },
+  
+  // More Additional Weird Facts
+  { id: "weird_015", statement: "Kangaroos walk backward easily", answer: false, category: "weird_facts", difficulty: "medium" },
+  { id: "weird_016", statement: "A day on Venus is longer than a year on Venus", answer: true, category: "weird_facts", difficulty: "hard" },
+  { id: "weird_017", statement: "Cockroaches live for weeks without their head", answer: true, category: "weird_facts", difficulty: "medium" },
+  { id: "weird_018", statement: "The tongue is the strongest muscle in the human body", answer: false, category: "weird_facts", difficulty: "medium" },
+  { id: "weird_019", statement: "Lobsters taste with their feet", answer: true, category: "weird_facts", difficulty: "medium" },
+  { id: "weird_020", statement: "Wombat poop is cube-shaped", answer: true, category: "weird_facts", difficulty: "medium" },
+  { id: "weird_021", statement: "Goats can climb trees", answer: true, category: "weird_facts", difficulty: "medium" },
+  { id: "weird_022", statement: "Ostriches bury their heads in sand when scared", answer: false, category: "weird_facts", difficulty: "medium" },
+  { id: "weird_023", statement: "Alligators survive in salt water better than crocodiles", answer: false, category: "weird_facts", difficulty: "medium" },
+  { id: "weird_024", statement: "Sharks existed before trees", answer: true, category: "weird_facts", difficulty: "hard" },
 
   // Misleading Questions for "Misleading" Mode
   { id: "mislead_001", statement: "Is it false that the sun doesn't rise in the west?", answer: true, category: "misleading", difficulty: "medium" },

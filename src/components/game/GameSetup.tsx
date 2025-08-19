@@ -50,7 +50,6 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
                 { id: 'normal', name: 'Normal', icon: Users, desc: 'Standard gameplay' },
-                { id: 'speed', name: 'Speed', icon: Zap, desc: 'Faster questions' },
                 { id: 'double-speed', name: 'Double Speed', icon: Timer, desc: '3 seconds per question' },
                 { id: 'fakeout', name: 'Fake-Out', icon: Shuffle, desc: 'Reverse logic twists' },
                 { id: 'misleading', name: 'Misleading', icon: Flame, desc: 'Confusing question phrasing' }
