@@ -366,24 +366,26 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
       </div>
 
       {/* Question Display */}
-      <div className="absolute top-32 left-1/2 transform -translate-x-1/2 z-10 pointer-events-none">
-        <div className="bg-background/95 backdrop-blur-sm border-2 border-primary rounded-2xl p-6 max-w-3xl mx-4 shadow-glow">
-          <div className="text-center">
-            <h2 className="text-2xl md:text-4xl font-black mb-2 leading-tight">
-              {currentQuestion.statement}
-            </h2>
-            
-            {lastAnswer && (
-              <div className={cn(
-                "text-xl font-bold mt-2 animate-bounce",
-                lastAnswer.correct ? "text-secondary" : "text-destructive"
-              )}>
-                {lastAnswer.correct ? "CORRECT! 🎉" : "WRONG! 💥"}
-              </div>
-            )}
+      {currentQuestion && (
+        <div className="absolute top-32 left-1/2 transform -translate-x-1/2 z-10 pointer-events-none">
+          <div className="bg-background/95 backdrop-blur-sm border-2 border-primary rounded-2xl p-6 max-w-3xl mx-4 shadow-glow">
+            <div className="text-center">
+              <h2 className="text-2xl md:text-4xl font-black mb-2 leading-tight">
+                {currentQuestion.statement}
+              </h2>
+              
+              {lastAnswer && (
+                <div className={cn(
+                  "text-xl font-bold mt-2 animate-bounce",
+                  lastAnswer.correct ? "text-secondary" : "text-destructive"
+                )}>
+                  {lastAnswer.correct ? "CORRECT! 🎉" : "WRONG! 💥"}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
