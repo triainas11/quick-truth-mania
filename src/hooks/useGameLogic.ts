@@ -163,28 +163,103 @@ export const useGameLogic = () => {
           setTimeout(() => {
             setGameState(prevState => {
               const newRoundsPlayed = prevState.roundsPlayed + 1;
+              const updatedPlayers = [...prevState.players] as [Player, Player];
               
-              // Check if we've completed all rounds (only for points mode)
-              if (prevState.settings.scoreMode === 'points' && newRoundsPlayed >= prevState.totalRounds) {
-                const [player1, player2] = prevState.players;
-                if (player1.score === player2.score) {
+              // Both players lose 1 life for timeout
+              updatedPlayers[0].lives = Math.max(0, (updatedPlayers[0].lives || 0) - 1);
+              updatedPlayers[1].lives = Math.max(0, (updatedPlayers[1].lives || 0) - 1);
+              
+              // Check if game should end based on lives mode (KO rule)
+              if (prevState.settings.scoreMode === 'lives') {
+                const alivePlayers = updatedPlayers.filter(p => (p.lives || 0) > 0);
+                if (alivePlayers.length === 1) {
                   return {
                     ...prevState,
-                    gamePhase: 'tiebreaker'
-                  };
-                } else {
-                  const winner = player1.score > player2.score ? player1 : player2;
-                  return {
-                    ...prevState,
-                    winner,
+                    players: updatedPlayers,
+                    winner: alivePlayers[0],
                     gamePhase: 'gameEnd'
                   };
+                } else if (alivePlayers.length === 0) {
+                  // Both players KO'd
+                  return {
+                    ...prevState,
+                    players: updatedPlayers,
+                    winner: null,
+                    gamePhase: 'gameEnd'
+                  };
+                }
+              }
+              
+              // Check if we've completed all rounds
+              if (newRoundsPlayed >= prevState.totalRounds) {
+                if (prevState.settings.scoreMode === 'points') {
+                  const [player1, player2] = updatedPlayers;
+                  if (player1.score === player2.score) {
+                    return {
+                      ...prevState,
+                      players: updatedPlayers,
+                      gamePhase: 'tiebreaker'
+                    };
+                  } else {
+                    const winner = player1.score > player2.score ? player1 : player2;
+                    return {
+                      ...prevState,
+                      players: updatedPlayers,
+                      winner,
+                      gamePhase: 'gameEnd'
+                    };
+                  }
+                } else {
+                  // Lives mode: check points first, then lives
+                  const [player1, player2] = updatedPlayers;
+                  if (player1.score > player2.score) {
+                    return {
+                      ...prevState,
+                      players: updatedPlayers,
+                      winner: player1,
+                      gamePhase: 'gameEnd'
+                    };
+                  } else if (player2.score > player1.score) {
+                    return {
+                      ...prevState,
+                      players: updatedPlayers,
+                      winner: player2,
+                      gamePhase: 'gameEnd'
+                    };
+                  } else {
+                    // Points tied, check lives
+                    const player1Lives = player1.lives || 0;
+                    const player2Lives = player2.lives || 0;
+                    if (player1Lives > player2Lives) {
+                      return {
+                        ...prevState,
+                        players: updatedPlayers,
+                        winner: player1,
+                        gamePhase: 'gameEnd'
+                      };
+                    } else if (player2Lives > player1Lives) {
+                      return {
+                        ...prevState,
+                        players: updatedPlayers,
+                        winner: player2,
+                        gamePhase: 'gameEnd'
+                      };
+                    } else {
+                      // Still tied, sudden death
+                      return {
+                        ...prevState,
+                        players: updatedPlayers,
+                        gamePhase: 'tiebreaker'
+                      };
+                    }
+                  }
                 }
               }
 
               // Continue to next round
               return {
                 ...prevState,
+                players: updatedPlayers,
                 currentRound: prevState.currentRound + 1,
                 roundsPlayed: newRoundsPlayed,
                 currentQuestion: null,
@@ -254,10 +329,17 @@ export const useGameLogic = () => {
         
         if (prev.settings.scoreMode === 'lives') {
           if (!correct) {
+            // Wrong answer: lose 1 life, opponent gains 1 point
             newPlayers[playerIndex].lives = Math.max(0, (newPlayers[playerIndex].lives || 0) - 1);
             newPlayers[playerIndex].streak = 0; // Reset streak on wrong answer
+            newPlayers[otherPlayerIndex].score += 1; // Opponent gains point automatically
+            newPlayers[otherPlayerIndex].streak = 0; // Reset opponent's streak too
           } else {
+            // Correct answer: gain 1 point, no life lost
+            newPlayers[playerIndex].score += 1;
             newPlayers[playerIndex].streak += 1;
+            newPlayers[otherPlayerIndex].streak = 0; // Reset other player's streak
+            
             // Check for streak bonus (5+ correct in a row)
             if (prev.settings.streakBonus && newPlayers[playerIndex].streak >= 5 && newPlayers[playerIndex].streak % 5 === 0) {
               if (prev.settings.soundEffects) {
@@ -265,8 +347,6 @@ export const useGameLogic = () => {
               }
             }
           }
-          // Reset other player's streak
-          newPlayers[otherPlayerIndex].streak = 0;
         } else {
           // Points mode
           if (correct) {
@@ -343,7 +423,7 @@ export const useGameLogic = () => {
         setGameState(prev => {
           const newRoundsPlayed = prev.roundsPlayed + 1;
           
-          // Check if game should end based on lives mode
+          // Check if game should end based on lives mode (KO rule)
           if (prev.settings.scoreMode === 'lives') {
             const alivePlayers = prev.players.filter(p => (p.lives || 0) > 0);
             if (alivePlayers.length === 1) {
@@ -352,24 +432,72 @@ export const useGameLogic = () => {
                 winner: alivePlayers[0],
                 gamePhase: 'gameEnd'
               };
+            } else if (alivePlayers.length === 0) {
+              // Both players KO'd
+              return {
+                ...prev,
+                winner: null,
+                gamePhase: 'gameEnd'
+              };
             }
           }
 
-          // Check if we've completed all rounds (only for points mode)
-          if (prev.settings.scoreMode === 'points' && newRoundsPlayed >= prev.totalRounds) {
-            const [player1, player2] = prev.players;
-            if (player1.score === player2.score) {
-              return {
-                ...prev,
-                gamePhase: 'tiebreaker'
-              };
+          // Check if we've completed all rounds
+          if (newRoundsPlayed >= prev.totalRounds) {
+            if (prev.settings.scoreMode === 'points') {
+              const [player1, player2] = prev.players;
+              if (player1.score === player2.score) {
+                return {
+                  ...prev,
+                  gamePhase: 'tiebreaker'
+                };
+              } else {
+                const winner = player1.score > player2.score ? player1 : player2;
+                return {
+                  ...prev,
+                  winner,
+                  gamePhase: 'gameEnd'
+                };
+              }
             } else {
-              const winner = player1.score > player2.score ? player1 : player2;
-              return {
-                ...prev,
-                winner,
-                gamePhase: 'gameEnd'
-              };
+              // Lives mode: check points first, then lives
+              const [player1, player2] = prev.players;
+              if (player1.score > player2.score) {
+                return {
+                  ...prev,
+                  winner: player1,
+                  gamePhase: 'gameEnd'
+                };
+              } else if (player2.score > player1.score) {
+                return {
+                  ...prev,
+                  winner: player2,
+                  gamePhase: 'gameEnd'
+                };
+              } else {
+                // Points tied, check lives
+                const player1Lives = player1.lives || 0;
+                const player2Lives = player2.lives || 0;
+                if (player1Lives > player2Lives) {
+                  return {
+                    ...prev,
+                    winner: player1,
+                    gamePhase: 'gameEnd'
+                  };
+                } else if (player2Lives > player1Lives) {
+                  return {
+                    ...prev,
+                    winner: player2,
+                    gamePhase: 'gameEnd'
+                  };
+                } else {
+                  // Still tied, sudden death
+                  return {
+                    ...prev,
+                    gamePhase: 'tiebreaker'
+                  };
+                }
+              }
             }
           }
 
