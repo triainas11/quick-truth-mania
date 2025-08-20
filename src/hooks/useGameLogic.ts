@@ -170,7 +170,6 @@ export const useGameLogic = () => {
                 if (player1.score === player2.score) {
                   return {
                     ...prevState,
-                    isTiebreaker: true,
                     gamePhase: 'tiebreaker'
                   };
                 } else {
@@ -289,7 +288,7 @@ export const useGameLogic = () => {
             
             newPlayers[playerIndex].score += pointsToAdd;
           } else {
-            newPlayers[playerIndex].score = Math.max(0, newPlayers[playerIndex].score - 1);
+            // No point reduction in points mode anymore
             newPlayers[playerIndex].streak = 0; // Reset streak on wrong answer
           }
           // Reset other player's streak
@@ -309,6 +308,33 @@ export const useGameLogic = () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
+      }
+
+      // Handle sudden death logic - immediate win/lose
+      if (gameState.gamePhase === 'tiebreaker') {
+        const currentPlayerIndex = playerId - 1;
+        const otherPlayerIndexSD = currentPlayerIndex === 0 ? 1 : 0;
+        
+        setTimeout(() => {
+          setGameState(prev => {
+            if (correct) {
+              // Correct answer in sudden death = immediate win
+              return {
+                ...prev,
+                winner: prev.players[currentPlayerIndex],
+                gamePhase: 'gameEnd'
+              };
+            } else {
+              // Wrong answer in sudden death = other player wins
+              return {
+                ...prev,
+                winner: prev.players[otherPlayerIndexSD],
+                gamePhase: 'gameEnd'
+              };
+            }
+          });
+        }, 1500);
+        return;
       }
 
       // Auto advance after showing feedback (immediate for correct, brief delay for wrong)
@@ -335,7 +361,6 @@ export const useGameLogic = () => {
             if (player1.score === player2.score) {
               return {
                 ...prev,
-                isTiebreaker: true,
                 gamePhase: 'tiebreaker'
               };
             } else {
@@ -376,7 +401,7 @@ export const useGameLogic = () => {
     setGameState(prev => ({
       ...prev,
       currentQuestion: tiebreakerQuestion,
-      timeLeft: prev.settings.timeLimit,
+      timeLeft: 5, // Fixed 5 seconds for sudden death
       isActive: true,
       lastAnswer: null,
       gamePhase: 'playing'
@@ -384,17 +409,32 @@ export const useGameLogic = () => {
 
     answerLockRef.current = null;
 
-    // Start timer for tiebreaker
+    // Start timer for sudden death
     timerRef.current = setInterval(() => {
       setGameState(prev => {
         if (prev.timeLeft <= 1) {
           clearInterval(timerRef.current!);
+          
+          // Auto advance after showing "YOU BOTH LOST"
+          setTimeout(() => {
+            setGameState(prevState => ({
+              ...prevState,
+              gamePhase: 'gameEnd',
+              winner: null // Both lost
+            }));
+          }, 2000);
+          
           return {
             ...prev,
             timeLeft: 0,
             isActive: false,
-            gamePhase: 'gameEnd',
-            winner: null // Still a tie
+            gamePhase: 'roundEnd',
+            lastAnswer: {
+              playerId: 1, // Arbitrary
+              answer: false,
+              correct: false,
+              timestamp: Date.now()
+            }
           };
         }
         return {

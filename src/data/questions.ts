@@ -193,7 +193,7 @@ const questionPool: Question[] = [
   { id: "trick_001", statement: "This statement is false", answer: false, category: "general", difficulty: "hard" },
   { id: "trick_002", statement: "You are currently reading this", answer: true, category: "general", difficulty: "easy" },
   { id: "trick_003", statement: "The word 'short' is longer than the word 'long'", answer: true, category: "general", difficulty: "medium" },
-  { id: "trick_004", statement: "Tomorrow never comes", answer: true, category: "general", difficulty: "medium" },
+  
   { id: "trick_005", statement: "Silence makes a sound", answer: false, category: "general", difficulty: "medium" },
 ];
 

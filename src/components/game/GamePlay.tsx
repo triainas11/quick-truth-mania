@@ -74,10 +74,10 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
           ) : (
             <>
               <h1 className="text-6xl font-black text-white mb-4">
-                🤝 IT'S A TIE! 🤝
+                💔 YOU BOTH LOST! 💔
               </h1>
               <div className="text-2xl text-white/90 mb-6">
-                Amazing match!
+                Nobody answered correctly in sudden death!
               </div>
             </>
           )}
@@ -124,17 +124,17 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
       <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
         <div className="text-center">
           <h2 className="text-5xl font-black text-white mb-4 animate-pulse">
-            ⚡ TIEBREAKER! ⚡
+            ⚡ SUDDEN DEATH! ⚡
           </h2>
           <div className="text-2xl text-white/90 mb-6">
-            Sudden Death Round!
+            5 Seconds Only!
           </div>
           <div className="text-lg text-white/80 mb-8">
-            First wrong answer loses!
+            Winner takes all or both lose!
           </div>
           <Button onClick={onNextRound} variant="action" size="lg" className="text-xl px-8">
             <Zap className="mr-2 w-6 h-6" />
-            Start Tiebreaker!
+            Start Sudden Death!
           </Button>
         </div>
       </div>
@@ -147,7 +147,7 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
       <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
         <div className="text-center">
           <h2 className="text-4xl font-black text-white mb-6">
-            Level {roundsPlayed + 1} of {totalRounds}
+            Round {roundsPlayed + 1} of {totalRounds}
           </h2>
           <Button onClick={onNextRound} variant="action" size="lg" className="text-xl px-8">
             <Zap className="mr-2 w-6 h-6" />
@@ -167,8 +167,7 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Badge variant="secondary" className="text-lg font-bold">
-              Level {roundsPlayed + 1}/{totalRounds}
-              {isTiebreaker && " - TIEBREAKER"}
+              {gameState.gamePhase === 'tiebreaker' ? "SUDDEN DEATH" : `Round ${roundsPlayed + 1}/${totalRounds}`}
             </Badge>
             <div className="flex items-center gap-2 text-white">
               <Timer className="w-5 h-5" />
@@ -374,14 +373,14 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
                 {currentQuestion.statement}
               </h2>
               
-              {lastAnswer && (
-                <div className={cn(
-                  "text-xl font-bold mt-2 animate-bounce",
-                  lastAnswer.correct ? "text-secondary" : "text-destructive"
-                )}>
-                  {lastAnswer.correct ? "CORRECT! 🎉" : "WRONG! 💥"}
-                </div>
-              )}
+           {lastAnswer && (
+                 <div className={cn(
+                   "text-xl font-bold mt-2 animate-bounce",
+                   lastAnswer.correct ? "text-secondary" : "text-destructive"
+                 )}>
+                   {lastAnswer.correct ? "CORRECT! 🎉" : "WRONG! 💥"}
+                 </div>
+               )}
             </div>
           </div>
         </div>

@@ -25,7 +25,12 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
   });
 
   const handleStart = () => {
-    onStartGame(settings);
+    // Ensure lives don't exceed rounds
+    const finalSettings = {
+      ...settings,
+      maxLives: Math.min(settings.maxLives, settings.rounds)
+    };
+    onStartGame(finalSettings);
   };
 
   return (
@@ -139,8 +144,8 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
                   className="p-4 h-auto flex flex-col"
                 >
                   <Trophy className="w-6 h-6 mb-2" />
-                  <span className="font-bold">Points Mode</span>
-                  <span className="text-sm opacity-75">+1 correct, -1 wrong</span>
+                   <span className="font-bold">Points Mode</span>
+                   <span className="text-sm opacity-75">+1 correct, no penalty</span>
                 </Button>
                 <Button
                   variant={settings.scoreMode === 'lives' ? 'default' : 'outline'}
@@ -157,20 +162,24 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
             {settings.scoreMode === 'lives' && (
               <div>
                 <label className="text-lg font-semibold mb-3 block">Starting Lives</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[3, 5, 7].map((lives) => (
-                    <Button
-                      key={lives}
-                      variant={settings.maxLives === lives ? 'default' : 'outline'}
-                      onClick={() => setSettings({...settings, maxLives: lives})}
-                      className="p-4 text-lg font-bold"
-                    >
-                      {lives} ❤️
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
+                 <div className="grid grid-cols-3 gap-3">
+                   {[3, 5, 7].map((lives) => (
+                     <Button
+                       key={lives}
+                       variant={settings.maxLives === lives ? 'default' : 'outline'}
+                       onClick={() => setSettings({...settings, maxLives: lives})}
+                       className="p-4 text-lg font-bold"
+                       disabled={lives > settings.rounds}
+                     >
+                       {lives} ❤️
+                     </Button>
+                   ))}
+                 </div>
+                 <p className="text-sm text-muted-foreground mt-2">
+                   Lives cannot exceed the number of rounds ({settings.rounds})
+                 </p>
+               </div>
+             )}
 
           {/* Advanced Settings */}
           <div>
