@@ -42,7 +42,7 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
 
   return (
     <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full p-8 bg-card/90 backdrop-blur-sm border-primary/20 shadow-glow">
+      <Card className="max-w-2xl w-full p-6 md:p-8 bg-card/90 backdrop-blur-sm border-primary/20 shadow-glow">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <div className="gradient-primary p-4 rounded-full">
@@ -85,13 +85,13 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
           {/* Rounds */}
           <div>
             <label className="text-lg font-semibold mb-3 block">Number of Rounds</label>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 md:flex gap-2">
               {[3, 5, 10, 15].map((rounds) => (
                 <Button
                   key={rounds}
                   variant={settings.rounds === rounds ? 'default' : 'outline'}
                   onClick={() => setSettings(prev => ({ ...prev, rounds }))}
-                  className="flex-1"
+                  className="flex-1 h-12 touch-manipulation"
                 >
                   {rounds}
                 </Button>
@@ -121,13 +121,13 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
           {/* Time Limit */}
           <div>
             <label className="text-lg font-semibold mb-3 block">Time Per Question</label>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 md:flex gap-2">
               {(settings.gameMode === 'double-speed' ? [3] : [5, 10, 15, 20]).map((time) => (
                 <Button
                   key={time}
                   variant={settings.timeLimit === time ? 'default' : 'outline'}
                   onClick={() => setSettings(prev => ({ ...prev, timeLimit: time }))}
-                  className="flex-1"
+                  className="flex-1 h-12 touch-manipulation"
                   disabled={settings.gameMode === 'double-speed' && time !== 3}
                 >
                   {time}s
@@ -148,7 +148,7 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
                 <Button
                   variant={settings.scoreMode === 'points' ? 'default' : 'outline'}
                   onClick={() => setSettings({...settings, scoreMode: 'points'})}
-                  className="p-4 h-auto flex flex-col"
+                  className="p-4 h-auto flex flex-col touch-manipulation"
                 >
                   <Trophy className="w-6 h-6 mb-2" />
                    <span className="font-bold">Points Mode</span>
@@ -157,7 +157,7 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
                 <Button
                   variant={settings.scoreMode === 'lives' ? 'default' : 'outline'}
                   onClick={() => setSettings({...settings, scoreMode: 'lives'})}
-                  className="p-4 h-auto flex flex-col"
+                  className="p-4 h-auto flex flex-col touch-manipulation"
                 >
                   <Heart className="w-6 h-6 mb-2" />
                   <span className="font-bold">Lives Mode</span>
@@ -242,7 +242,7 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
           <Button 
             onClick={handleStart}
             size="lg" 
-            className="w-full text-xl py-6"
+            className="w-full text-xl py-8 touch-manipulation"
             variant="hero"
           >
             <Gamepad2 className="mr-2 w-6 h-6" />
