@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Gamepad2, Users, Timer, Zap, Trophy, Heart, Volume2, Flame, Shuffle } from "lucide-react";
 import { GameSettings } from "@/hooks/useGameLogic";
 import { categories } from "@/data/questions";
+import GameRulesPopup from "./GameRulesPopup";
 
 interface GameSetupProps {
   onStartGame: (settings: GameSettings) => void;
@@ -24,7 +25,13 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
     buttonShuffle: false
   });
 
+  const [showRulesPopup, setShowRulesPopup] = useState(false);
+
   const handleStart = () => {
+    setShowRulesPopup(true);
+  };
+
+  const handleContinueToGame = () => {
     // Ensure lives don't exceed rounds
     const finalSettings = {
       ...settings,
@@ -203,15 +210,15 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
                 <span className="font-bold">Sound Effects</span>
                 <span className="text-xs opacity-75">Audio feedback & vibration</span>
               </Button>
-              <Button
-                variant={settings.buttonShuffle ? 'default' : 'outline'}
-                onClick={() => setSettings(prev => ({ ...prev, buttonShuffle: !prev.buttonShuffle }))}
-                className="p-4 h-auto flex flex-col col-span-2"
-              >
-                <Shuffle className="w-6 h-6 mb-2" />
-                <span className="font-bold">Random Button Shuffle</span>
-                <span className="text-xs opacity-75">Buttons change position (+10% score bonus)</span>
-              </Button>
+                <Button
+                  variant={settings.buttonShuffle ? 'default' : 'outline'}
+                  onClick={() => setSettings(prev => ({ ...prev, buttonShuffle: !prev.buttonShuffle }))}
+                  className="p-4 h-auto flex flex-col col-span-2"
+                >
+                  <Shuffle className="w-6 h-6 mb-2" />
+                  <span className="font-bold">Random Button Shuffle</span>
+                  <span className="text-xs opacity-75">Buttons change position</span>
+                </Button>
             </div>
           </div>
 
@@ -228,7 +235,7 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
               <Badge variant="secondary">{settings.scoreMode === 'lives' ? `${settings.maxLives} lives` : 'points'}</Badge>
               {settings.streakBonus && <Badge variant="outline">Streak Bonus</Badge>}
               {settings.soundEffects && <Badge variant="outline">Sound Effects</Badge>}
-              {settings.buttonShuffle && <Badge variant="outline">Button Shuffle (+10%)</Badge>}
+              {settings.buttonShuffle && <Badge variant="outline">Button Shuffle</Badge>}
             </div>
           </div>
 
@@ -243,6 +250,12 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
           </Button>
         </div>
       </Card>
+      
+      <GameRulesPopup 
+        isOpen={showRulesPopup}
+        onContinue={handleContinueToGame}
+        settings={settings}
+      />
     </div>
   );
 };

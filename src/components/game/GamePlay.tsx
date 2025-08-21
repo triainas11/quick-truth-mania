@@ -180,12 +180,22 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
               <div className="text-2xl font-bold">
                 {settings.scoreMode === 'lives' ? `❤️ ${players[0].lives}` : players[0].score}
               </div>
+              {settings.scoreMode === 'lives' && (
+                <div className="text-lg font-semibold text-yellow-300">
+                  🏆 {players[0].score}
+                </div>
+              )}
               <div className="text-sm opacity-80">{players[0].name}</div>
             </div>
             <div className="text-center text-white">
               <div className="text-2xl font-bold">
                 {settings.scoreMode === 'lives' ? `❤️ ${players[1].lives}` : players[1].score}
               </div>
+              {settings.scoreMode === 'lives' && (
+                <div className="text-lg font-semibold text-yellow-300">
+                  🏆 {players[1].score}
+                </div>
+              )}
               <div className="text-sm opacity-80">{players[1].name}</div>
             </div>
           </div>
@@ -206,6 +216,11 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
             <div className="text-5xl font-black text-background">
               {settings.scoreMode === 'lives' ? `❤️ ${players[0].lives}` : players[0].score}
             </div>
+            {settings.scoreMode === 'lives' && (
+              <div className="text-2xl font-bold text-yellow-400">
+                🏆 {players[0].score}
+              </div>
+            )}
           </div>
           
           <div className="space-y-6 w-full max-w-md">
@@ -288,6 +303,11 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
             <div className="text-5xl font-black text-background">
               {settings.scoreMode === 'lives' ? `❤️ ${players[1].lives}` : players[1].score}
             </div>
+            {settings.scoreMode === 'lives' && (
+              <div className="text-2xl font-bold text-yellow-400">
+                🏆 {players[1].score}
+              </div>
+            )}
           </div>
           
           <div className="space-y-6 w-full max-w-md">

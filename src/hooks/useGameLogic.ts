@@ -361,10 +361,7 @@ export const useGameLogic = () => {
               }
             }
             
-            // Button shuffle score multiplier (10% bonus)
-            if (prev.settings.buttonShuffle) {
-              pointsToAdd = Math.ceil(pointsToAdd * 1.1);
-            }
+            // No bonus for button shuffle
             
             newPlayers[playerIndex].score += pointsToAdd;
           } else {
