@@ -305,14 +305,19 @@ const Auth = () => {
                   </p>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full touch-optimized" 
-                  disabled={loading}
-                  variant="hero"
-                >
-                  {loading ? "Creating Account..." : "Create Account"}
-                </Button>
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground text-center">
+                    You will receive an email to confirm your account after registration
+                  </p>
+                  <Button 
+                    type="submit" 
+                    className="w-full touch-optimized" 
+                    disabled={loading}
+                    variant="hero"
+                  >
+                    {loading ? "Creating Account..." : "Create Account"}
+                  </Button>
+                </div>
               </form>
             </TabsContent>
           </Tabs>
