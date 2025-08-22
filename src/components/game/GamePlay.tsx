@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Check, X, Timer, Trophy, Zap } from "lucide-react";
 import { GameState } from "@/hooks/useGameLogic";
 import { cn } from "@/lib/utils";
+import { BannerAd } from "@/components/ads/BannerAd";
+import { InterstitialAd } from "@/components/ads/InterstitialAd";
+import { RewardedAd } from "@/components/ads/RewardedAd";
 
 interface GamePlayProps {
   gameState: GameState;
@@ -29,6 +32,10 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
     isTiebreaker
   } = gameState;
 
+  // Ad state management
+  const [showInterstitialTrigger, setShowInterstitialTrigger] = useState(false);
+  const [roundCount, setRoundCount] = useState(0);
+
   // Button shuffle state - randomize button positions when shuffle is enabled
   const [buttonPositions, setButtonPositions] = useState<{ player1: 'yes-first' | 'no-first', player2: 'yes-first' | 'no-first' }>({
     player1: 'yes-first',
@@ -52,6 +59,29 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
       // Game is complete
     }
   }, [gamePhase, winner, isTiebreaker]);
+
+  // Handle interstitial ads between rounds
+  useEffect(() => {
+    if (roundsPlayed > roundCount && roundsPlayed % 2 === 0) {
+      // Show interstitial ad every 2 rounds
+      setShowInterstitialTrigger(true);
+      setRoundCount(roundsPlayed);
+    }
+  }, [roundsPlayed, roundCount]);
+
+  // Reset interstitial trigger
+  useEffect(() => {
+    if (showInterstitialTrigger) {
+      const timer = setTimeout(() => setShowInterstitialTrigger(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [showInterstitialTrigger]);
+
+  // Handle rewarded ad for extra life
+  const handleRewardedAd = (reward: any) => {
+    console.log('Rewarded ad completed, giving extra life:', reward);
+    // TODO: Implement giving extra life to player
+  };
 
   // Game End Screen
   if (gamePhase === 'gameEnd') {
@@ -105,14 +135,26 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
             {isTiebreaker && " + Tiebreaker"}
           </div>
           
-          <Button 
-            onClick={() => window.location.reload()} 
-            variant="action" 
-            size="lg"
-            className="text-xl px-8"
-          >
-            🔄 Play Again
-          </Button>
+          <div className="flex flex-col gap-4 items-center">
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="action" 
+              size="lg"
+              className="text-xl px-8"
+            >
+              🔄 Play Again
+            </Button>
+            
+            {/* Rewarded ad for bonus points */}
+            <RewardedAd
+              onRewardEarned={handleRewardedAd}
+              className="text-lg px-6"
+              variant="secondary"
+            >
+              <Trophy className="w-4 h-4 mr-2" />
+              Watch Ad for Bonus Points
+            </RewardedAd>
+          </div>
         </div>
       </div>
     );
@@ -149,10 +191,23 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
           <h2 className="text-4xl font-black text-white mb-6">
             Round {roundsPlayed + 1} of {totalRounds}
           </h2>
-          <Button onClick={onNextRound} variant="action" size="lg" className="text-xl px-8">
-            <Zap className="mr-2 w-6 h-6" />
-            Next Question!
-          </Button>
+          <div className="flex flex-col gap-4 items-center">
+            <Button onClick={onNextRound} variant="action" size="lg" className="text-xl px-8">
+              <Zap className="mr-2 w-6 h-6" />
+              Next Question!
+            </Button>
+            
+            {/* Rewarded ad for extra life */}
+            {settings.scoreMode === 'lives' && (
+              <RewardedAd
+                onRewardEarned={handleRewardedAd}
+                className="text-lg px-6"
+                variant="outline"
+              >
+                Get Extra Life
+              </RewardedAd>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -162,6 +217,13 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Interstitial Ad Trigger */}
+      <InterstitialAd
+        trigger={showInterstitialTrigger}
+        onAdShown={() => console.log('Interstitial ad shown between rounds')}
+        onAdFailed={() => console.log('Interstitial ad failed')}
+      />
+      
       {/* Header */}
       <div className="gradient-primary p-4">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
@@ -405,6 +467,9 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
           </div>
         </div>
       )}
+
+      {/* Banner Ad at bottom */}
+      <BannerAd className="fixed bottom-0 left-0 right-0 z-20" />
     </div>
   );
 };
