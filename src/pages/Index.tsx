@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import GameFeature from "@/components/GameFeature";
 import SplitSection from "@/components/SplitSection";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Zap, 
   Users, 
@@ -12,14 +13,53 @@ import {
   Heart, 
   Download,
   Play,
-  Smartphone
+  Smartphone,
+  LogIn,
+  LogOut,
+  User
 } from "lucide-react";
 import quickTruthIcon from "@/assets/quick-truth-icon.png";
 import heroBanner from "@/assets/hero-banner.png";
 
 const Index = () => {
+  const { user, signOut, loading } = useAuth();
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="absolute top-0 right-0 z-50 p-6">
+        {!loading && (
+          user ? (
+            <div className="flex items-center gap-4">
+              <span className="text-white/80 hidden sm:inline">
+                Welcome, {user.user_metadata?.display_name || user.email}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={signOut}
+                className="text-white border-white/20 hover:bg-white/10"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="text-white border-white/20 hover:bg-white/10"
+            >
+              <a href="/auth">
+                <LogIn className="w-4 h-4 mr-2" />
+                Sign In
+              </a>
+            </Button>
+          )
+        )}
+      </nav>
+
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 gradient-hero opacity-90"></div>
