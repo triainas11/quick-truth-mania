@@ -37,7 +37,7 @@ const Auth = () => {
     setError("");
 
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = window.location.origin;
       
       const { error } = await supabase.auth.signUp({
         email,
