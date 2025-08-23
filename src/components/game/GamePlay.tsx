@@ -34,6 +34,8 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
 
   // Ad state management
   const [showInterstitialTrigger, setShowInterstitialTrigger] = useState(false);
+  const [showGameEndAd, setShowGameEndAd] = useState(false);
+  const [showTiebreakerAd, setShowTiebreakerAd] = useState(false);
   const [roundCount, setRoundCount] = useState(0);
 
   // Button shuffle state - randomize button positions when shuffle is enabled
@@ -53,12 +55,18 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
   }, [currentQuestion, settings.buttonShuffle, isActive]);
 
   useEffect(() => {
-    if (gamePhase === 'gameEnd' && !winner && !isTiebreaker) {
-      // Handle tie case - this will be handled by the game logic
-    } else if (gamePhase === 'gameEnd') {
-      // Game is complete
+    if (gamePhase === 'gameEnd') {
+      // Show ad when game ends
+      setShowGameEndAd(true);
     }
-  }, [gamePhase, winner, isTiebreaker]);
+  }, [gamePhase]);
+
+  useEffect(() => {
+    if (gamePhase === 'tiebreaker') {
+      // Show ad before tiebreaker
+      setShowTiebreakerAd(true);
+    }
+  }, [gamePhase]);
 
   // Handle interstitial ads between rounds
   useEffect(() => {
@@ -196,11 +204,37 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Interstitial Ad Trigger */}
+      {/* Interstitial Ad Triggers */}
       <InterstitialAd
         trigger={showInterstitialTrigger}
         onAdShown={() => console.log('Interstitial ad shown between rounds')}
         onAdFailed={() => console.log('Interstitial ad failed')}
+      />
+      
+      {/* Game End Ad */}
+      <InterstitialAd
+        trigger={showGameEndAd}
+        onAdShown={() => {
+          console.log('Game end ad shown');
+          setShowGameEndAd(false);
+        }}
+        onAdFailed={() => {
+          console.log('Game end ad failed');
+          setShowGameEndAd(false);
+        }}
+      />
+      
+      {/* Tiebreaker Ad */}
+      <InterstitialAd
+        trigger={showTiebreakerAd}
+        onAdShown={() => {
+          console.log('Tiebreaker ad shown');
+          setShowTiebreakerAd(false);
+        }}
+        onAdFailed={() => {
+          console.log('Tiebreaker ad failed');
+          setShowTiebreakerAd(false);
+        }}
       />
       
       {/* Header */}
