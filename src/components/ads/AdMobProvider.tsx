@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 import { useAdMob, AdMobConfig } from '@/hooks/useAdMob';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface AdMobContextType {
   isInitialized: boolean;
@@ -26,10 +27,10 @@ interface AdMobProviderProps {
 export const AdMobProvider: React.FC<AdMobProviderProps> = ({ children, config }) => {
   const adMob = useAdMob(config);
   const { user } = useAuth();
+  const { subscriptionData } = useSubscription();
   
-  // Check if user has premium subscription (no ads)
-  // This should be connected to your Stripe subscription status
-  const adsEnabled = true; // TODO: Connect to Stripe subscription status
+  // Ads are disabled if user has an active subscription
+  const adsEnabled = !subscriptionData.subscribed;
 
   useEffect(() => {
     // Prepare ads when AdMob is initialized
