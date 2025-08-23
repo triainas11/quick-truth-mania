@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 import { useAdMob, AdMobConfig } from '@/hooks/useAdMob';
-import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 
 interface AdMobContextType {
@@ -26,11 +25,10 @@ interface AdMobProviderProps {
 
 export const AdMobProvider: React.FC<AdMobProviderProps> = ({ children, config }) => {
   const adMob = useAdMob(config);
-  const { user } = useAuth();
-  const { subscriptionData } = useSubscription();
+  const { subscribed } = useSubscription();
   
   // Ads are disabled if user has an active subscription
-  const adsEnabled = !subscriptionData.subscribed;
+  const adsEnabled = !subscribed;
 
   useEffect(() => {
     // Prepare ads when AdMob is initialized

@@ -2,98 +2,68 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-interface SubscriptionData {
+interface SubscriptionStatus {
   subscribed: boolean;
   subscription_tier?: string;
   subscription_end?: string;
+  loading: boolean;
 }
 
 export const useSubscription = () => {
-  const [subscriptionData, setSubscriptionData] = useState<SubscriptionData>({ subscribed: false });
-  const [loading, setLoading] = useState(false);
-  const { user, session } = useAuth();
+  const [status, setStatus] = useState<SubscriptionStatus>({
+    subscribed: false,
+    loading: true,
+  });
+  const { user } = useAuth();
 
   const checkSubscription = async () => {
-    if (!user || !session) {
-      setSubscriptionData({ subscribed: false });
+    if (!user) {
+      setStatus({ subscribed: false, loading: false });
       return;
     }
 
-    setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      
+      if (error) throw error;
+      
+      setStatus({
+        subscribed: data.subscribed || false,
+        subscription_tier: data.subscription_tier,
+        subscription_end: data.subscription_end,
+        loading: false,
       });
-
-      if (error) {
-        console.error('Subscription check error:', error);
-        setSubscriptionData({ subscribed: false });
-      } else {
-        setSubscriptionData(data);
-      }
     } catch (error) {
-      console.error('Subscription check failed:', error);
-      setSubscriptionData({ subscribed: false });
-    } finally {
-      setLoading(false);
+      console.error('Subscription check error:', error);
+      setStatus({ subscribed: false, loading: false });
     }
   };
 
   const createCheckout = async () => {
-    if (!user || !session) {
+    if (!user) {
       throw new Error('User must be logged in to subscribe');
     }
 
-    const { data, error } = await supabase.functions.invoke('create-checkout', {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-      },
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    // Open Stripe checkout in a new tab
-    if (data?.url) {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout');
+      
+      if (error) throw error;
+      
+      // Open Stripe checkout in a new tab
       window.open(data.url, '_blank');
-    }
-  };
-
-  const openCustomerPortal = async () => {
-    if (!user || !session) {
-      throw new Error('User must be logged in to manage subscription');
-    }
-
-    const { data, error } = await supabase.functions.invoke('customer-portal', {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-      },
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    // Open customer portal in a new tab
-    if (data?.url) {
-      window.open(data.url, '_blank');
+    } catch (error) {
+      console.error('Checkout error:', error);
+      throw error;
     }
   };
 
   useEffect(() => {
-    if (user) {
-      checkSubscription();
-    }
+    checkSubscription();
   }, [user]);
 
   return {
-    subscriptionData,
-    loading,
+    ...status,
     checkSubscription,
     createCheckout,
-    openCustomerPortal,
   };
 };

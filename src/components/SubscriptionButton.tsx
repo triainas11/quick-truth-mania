@@ -6,18 +6,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 interface SubscriptionButtonProps {
-  variant?: 'default' | 'outline' | 'secondary';
-  size?: 'sm' | 'default' | 'lg';
   className?: string;
+  variant?: 'default' | 'outline' | 'secondary';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
 }
 
 export const SubscriptionButton: React.FC<SubscriptionButtonProps> = ({
+  className = '',
   variant = 'default',
   size = 'default',
-  className = ''
 }) => {
   const { user } = useAuth();
-  const { subscriptionData, loading, createCheckout, openCustomerPortal } = useSubscription();
+  const { subscribed, loading, createCheckout } = useSubscription();
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -29,48 +29,35 @@ export const SubscriptionButton: React.FC<SubscriptionButtonProps> = ({
       await createCheckout();
       toast.success('Redirecting to checkout...');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to create checkout');
-    }
-  };
-
-  const handleManageSubscription = async () => {
-    try {
-      await openCustomerPortal();
-      toast.success('Opening subscription management...');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to open customer portal');
+      console.error('Subscription error:', error);
+      toast.error('Failed to start checkout process');
     }
   };
 
   if (loading) {
     return (
-      <Button variant={variant} size={size} className={className} disabled>
+      <Button disabled variant={variant} size={size} className={className}>
         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-        Checking...
+        Loading...
       </Button>
     );
   }
 
-  if (subscriptionData.subscribed) {
+  if (subscribed) {
     return (
-      <Button
-        variant="outline"
-        size={size}
-        className={className}
-        onClick={handleManageSubscription}
-      >
+      <Button disabled variant="secondary" size={size} className={className}>
         <Crown className="w-4 h-4 mr-2 text-yellow-500" />
-        Manage Premium
+        Premium Active
       </Button>
     );
   }
 
   return (
     <Button
+      onClick={handleSubscribe}
       variant={variant}
       size={size}
       className={className}
-      onClick={handleSubscribe}
     >
       <Crown className="w-4 h-4 mr-2" />
       Remove Ads - €1.99/month

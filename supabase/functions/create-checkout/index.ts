@@ -3,8 +3,8 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+"Access-Control-Allow-Origin": "*",
+"Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
@@ -12,7 +12,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Create a Supabase client using the anon key for authentication
+  // Create a Supabase client using the anon key for auth
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
@@ -40,15 +40,15 @@ serve(async (req) => {
           price_data: {
             currency: "eur",
             product_data: { name: "Ad-Free Premium Subscription" },
-            unit_amount: 199, // €1.99 in cents
+            unit_amount: 199, // €1.99
             recurring: { interval: "month" },
           },
           quantity: 1,
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/?subscription=success`,
-      cancel_url: `${req.headers.get("origin")}/?subscription=cancelled`,
+      success_url: `${req.headers.get("origin")}/`,
+      cancel_url: `${req.headers.get("origin")}/`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import GameFeature from "@/components/GameFeature";
 import SplitSection from "@/components/SplitSection";
 import { useAuth } from "@/hooks/useAuth";
+import { SubscriptionButton } from "@/components/SubscriptionButton";
 import { 
   Zap, 
   Users, 
@@ -96,10 +97,11 @@ const Index = () => {
                 Play Now!
               </a>
             </Button>
-            <Button variant="game" size="lg" className="text-xl px-8 py-4">
-              <Download className="mr-2" />
-              Download Free
-            </Button>
+            <SubscriptionButton 
+              variant="outline" 
+              size="lg" 
+              className="text-xl px-8 py-4 text-white border-white/20 hover:bg-white/10" 
+            />
           </div>
         </div>
       </section>
