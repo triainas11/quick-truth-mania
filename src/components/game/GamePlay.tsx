@@ -144,16 +144,6 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
             >
               🔄 Play Again
             </Button>
-            
-            {/* Rewarded ad for bonus points */}
-            <RewardedAd
-              onRewardEarned={handleRewardedAd}
-              className="text-lg px-6"
-              variant="secondary"
-            >
-              <Trophy className="w-4 h-4 mr-2" />
-              Watch Ad for Bonus Points
-            </RewardedAd>
           </div>
         </div>
       </div>
@@ -196,17 +186,6 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
               <Zap className="mr-2 w-6 h-6" />
               Next Question!
             </Button>
-            
-            {/* Rewarded ad for extra life */}
-            {settings.scoreMode === 'lives' && (
-              <RewardedAd
-                onRewardEarned={handleRewardedAd}
-                className="text-lg px-6"
-                variant="outline"
-              >
-                Get Extra Life
-              </RewardedAd>
-            )}
           </div>
         </div>
       </div>
