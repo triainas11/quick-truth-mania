@@ -13,7 +13,7 @@ export interface Player {
 export interface GameSettings {
   rounds: number;
   category: string;
-  gameMode: 'normal' | 'fakeout' | 'double-speed' | 'misleading';
+  gameMode: 'normal' | 'double-speed' | 'misleading';
   timeLimit: number;
   scoreMode: 'points' | 'lives';
   maxLives: number;
@@ -87,7 +87,7 @@ export const useGameLogic = () => {
       ? { ...settings, timeLimit: 3 }
       : settings;
     
-    const questions = getRandomQuestions(finalSettings.rounds + 3, finalSettings.category === 'all' ? undefined : finalSettings.category); // Extra questions for potential tiebreakers
+    const questions = getRandomQuestions(finalSettings.rounds + 3, finalSettings.category === 'mixed' ? 'mixed' : finalSettings.category); // Extra questions for potential tiebreakers
     
     setGameState(prev => {
       const newState = {
@@ -296,15 +296,11 @@ export const useGameLogic = () => {
     if (!answerLockRef.current) {
       answerLockRef.current = { playerId, answer };
       
-      // Check if we're in reverse logic mode (fakeout) or misleading mode
-      const isReverseLogic = gameState.settings.gameMode === 'fakeout';
+      // Check if we're in misleading mode
       const isMisleadingMode = gameState.settings.gameMode === 'misleading';
       let correct: boolean;
       
-      if (isReverseLogic) {
-        // In reverse logic mode, wrong answer is correct
-        correct = answer !== gameState.currentQuestion.answer;
-      } else if (isMisleadingMode) {
+      if (isMisleadingMode) {
         // Misleading mode uses questions from "misleading" category with complex phrasing
         correct = answer === gameState.currentQuestion.answer;
       } else {

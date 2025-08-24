@@ -15,7 +15,7 @@ interface GameSetupProps {
 const GameSetup = ({ onStartGame }: GameSetupProps) => {
   const [settings, setSettings] = useState<GameSettings>({
     rounds: 5,
-    category: 'general',
+    category: 'mixed',
     gameMode: 'normal',
     timeLimit: 10,
     scoreMode: 'points',
@@ -63,7 +63,6 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
               {[
                 { id: 'normal', name: 'Normal', icon: Users, desc: 'Standard gameplay' },
                 { id: 'double-speed', name: 'Double Speed', icon: Timer, desc: '3 seconds per question' },
-                { id: 'fakeout', name: 'Fake-Out', icon: Shuffle, desc: 'Reverse logic twists' },
                 { id: 'misleading', name: 'Misleading', icon: Flame, desc: 'Confusing question phrasing' }
               ].map((mode) => (
                 <Button
@@ -110,7 +109,7 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="mixed">Mixing Categories (except kids mode)</SelectItem>
                 {Object.entries(categories).map(([key, name]) => (
                   <SelectItem key={key} value={key}>{name}</SelectItem>
                 ))}
@@ -230,7 +229,7 @@ const GameSetup = ({ onStartGame }: GameSetupProps) => {
             </h3>
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">{settings.rounds} rounds</Badge>
-              <Badge variant="secondary">{categories[settings.category as keyof typeof categories] || 'All Categories'}</Badge>
+              <Badge variant="secondary">{categories[settings.category as keyof typeof categories] || 'Mixing Categories'}</Badge>
               <Badge variant="secondary">{settings.timeLimit}s per question</Badge>
               <Badge variant="secondary">{settings.scoreMode === 'lives' ? `${settings.maxLives} lives` : 'points'}</Badge>
               {settings.streakBonus && <Badge variant="outline">Streak Bonus</Badge>}

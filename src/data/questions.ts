@@ -205,14 +205,25 @@ class QuestionSelector {
   selectQuestions(count: number, category?: string): Question[] {
     let availableQuestions = questionPool.filter(q => 
       !this.recentQuestions.has(q.id) && 
-      (!category || category === 'all' || q.category === category)
+      (!category || category === 'mixed' || q.category === category)
     );
+
+    // Handle mixed categories (exclude kids mode)
+    if (category === 'mixed') {
+      availableQuestions = questionPool.filter(q => 
+        !this.recentQuestions.has(q.id) && q.category !== 'kids'
+      );
+    }
 
     // If we don't have enough non-recent questions, allow some repeats
     if (availableQuestions.length < count) {
-      availableQuestions = questionPool.filter(q => 
-        !category || category === 'all' || q.category === category
-      );
+      if (category === 'mixed') {
+        availableQuestions = questionPool.filter(q => q.category !== 'kids');
+      } else {
+        availableQuestions = questionPool.filter(q => 
+          !category || category === 'mixed' || q.category === category
+        );
+      }
       this.recentQuestions.clear(); // Reset recent questions
     }
 
