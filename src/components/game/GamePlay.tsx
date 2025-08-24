@@ -139,7 +139,7 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
           </div>
           
           <div className="text-lg text-white/80 mb-6">
-            Game Stats: {roundsPlayed} rounds played
+            Game Stats: {Math.max(roundsPlayed, totalRounds)} rounds played
             {isTiebreaker && " + Tiebreaker"}
           </div>
           
