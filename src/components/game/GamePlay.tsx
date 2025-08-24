@@ -183,6 +183,15 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
 
   // Round Transition Screen
   if (!currentQuestion && gamePhase === 'playing') {
+    // Auto-advance after 5 seconds if button not clicked
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        onNextRound();
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }, [onNextRound]);
+
     return (
       <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
         <div className="text-center">
@@ -194,6 +203,7 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
               <Zap className="mr-2 w-6 h-6" />
               Next Question!
             </Button>
+            <div className="text-white/60 text-sm">Auto-advances in 5 seconds</div>
           </div>
         </div>
       </div>

@@ -192,9 +192,15 @@ export const useGameLogic = () => {
               
               // Check if we've completed all rounds
               if (newRoundsPlayed >= prevState.totalRounds) {
+                console.log("Game completed - checking scores:", { 
+                  player1Score: updatedPlayers[0].score, 
+                  player2Score: updatedPlayers[1].score,
+                  scoreMode: prevState.settings.scoreMode
+                });
                 if (prevState.settings.scoreMode === 'points') {
                   const [player1, player2] = updatedPlayers;
                   if (player1.score === player2.score) {
+                    console.log("Scores tied, going to tiebreaker");
                     return {
                       ...prevState,
                       players: updatedPlayers,
@@ -202,6 +208,7 @@ export const useGameLogic = () => {
                     };
                   } else {
                     const winner = player1.score > player2.score ? player1 : player2;
+                    console.log("Winner determined:", winner.name);
                     return {
                       ...prevState,
                       players: updatedPlayers,
@@ -437,15 +444,22 @@ export const useGameLogic = () => {
 
           // Check if we've completed all rounds
           if (newRoundsPlayed >= prev.totalRounds) {
+            console.log("Game completed after answer - checking scores:", { 
+              player1Score: prev.players[0].score, 
+              player2Score: prev.players[1].score,
+              scoreMode: prev.settings.scoreMode
+            });
             if (prev.settings.scoreMode === 'points') {
               const [player1, player2] = prev.players;
               if (player1.score === player2.score) {
+                console.log("Scores tied after answer, going to tiebreaker");
                 return {
                   ...prev,
                   gamePhase: 'tiebreaker'
                 };
               } else {
                 const winner = player1.score > player2.score ? player1 : player2;
+                console.log("Winner determined after answer:", winner.name);
                 return {
                   ...prev,
                   winner,
