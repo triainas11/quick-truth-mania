@@ -536,13 +536,24 @@ export const useGameLogic = () => {
 
   const startTiebreaker = useCallback(() => {
     // Get a fresh question that hasn't been used in this game
+    const usedIds = gameState.usedQuestionIds;
+    console.log("Starting tiebreaker - Used question IDs:", Array.from(usedIds));
+    
     const freshQuestions = getRandomQuestions(
       1, 
       gameState.settings.category === 'mixed' ? 'mixed' : gameState.settings.category,
-      gameState.usedQuestionIds
+      usedIds
     );
     
+    if (freshQuestions.length === 0) {
+      console.error("No fresh questions available for tiebreaker!");
+      // Fallback - get any question
+      const fallbackQuestions = getRandomQuestions(1, gameState.settings.category === 'mixed' ? 'mixed' : gameState.settings.category);
+      freshQuestions.push(fallbackQuestions[0]);
+    }
+    
     const tiebreakerQuestion = freshQuestions[0];
+    console.log("Selected tiebreaker question:", tiebreakerQuestion.id, "-", tiebreakerQuestion.statement);
     
     setGameState(prev => ({
       ...prev,
