@@ -181,17 +181,19 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
     );
   }
 
-  // Round Transition Screen
-  if (!currentQuestion && gamePhase === 'playing') {
-    // Auto-advance after 5 seconds if button not clicked
-    useEffect(() => {
+  // Auto-advance timer for round transition screen
+  useEffect(() => {
+    if (!currentQuestion && gamePhase === 'playing') {
       const timer = setTimeout(() => {
         onNextRound();
       }, 5000);
       
       return () => clearTimeout(timer);
-    }, [onNextRound]);
+    }
+  }, [currentQuestion, gamePhase, onNextRound]);
 
+  // Round Transition Screen
+  if (!currentQuestion && gamePhase === 'playing') {
     return (
       <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
         <div className="text-center">
