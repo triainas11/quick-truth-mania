@@ -44,6 +44,8 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
     player2: 'yes-first'
   });
 
+  // ALL HOOKS MUST BE AT THE TOP - BEFORE ANY CONDITIONAL LOGIC OR EARLY RETURNS
+
   // Shuffle button positions when new question starts (if shuffle is enabled)
   useEffect(() => {
     if (settings.buttonShuffle && currentQuestion && isActive) {
@@ -84,6 +86,17 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
       return () => clearTimeout(timer);
     }
   }, [showInterstitialTrigger]);
+
+  // Auto-advance timer for round transition screen
+  useEffect(() => {
+    if (!currentQuestion && gamePhase === 'playing') {
+      const timer = setTimeout(() => {
+        onNextRound();
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentQuestion, gamePhase, onNextRound]);
 
   // Handle rewarded ad for extra life
   const handleRewardedAd = (reward: any) => {
@@ -181,16 +194,6 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
     );
   }
 
-  // Auto-advance timer for round transition screen
-  useEffect(() => {
-    if (!currentQuestion && gamePhase === 'playing') {
-      const timer = setTimeout(() => {
-        onNextRound();
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [currentQuestion, gamePhase, onNextRound]);
 
   // Round Transition Screen
   if (!currentQuestion && gamePhase === 'playing') {
