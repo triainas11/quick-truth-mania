@@ -200,31 +200,38 @@ const questionPool: Question[] = [
 // Question selection with anti-repeat algorithm
 class QuestionSelector {
   private recentQuestions: Set<string> = new Set();
-  private readonly maxRecentQuestions = 8; // Avoid repeats for 8 questions
+  private readonly maxRecentQuestions = 15; // Avoid repeats for entire game
 
-  selectQuestions(count: number, category?: string): Question[] {
+  selectQuestions(count: number, category?: string, excludeIds?: Set<string>): Question[] {
     let availableQuestions = questionPool.filter(q => 
       !this.recentQuestions.has(q.id) && 
+      !(excludeIds?.has(q.id)) &&
       (!category || category === 'mixed' || q.category === category)
     );
 
     // Handle mixed categories (exclude kids mode)
     if (category === 'mixed') {
       availableQuestions = questionPool.filter(q => 
-        !this.recentQuestions.has(q.id) && q.category !== 'kids'
+        !this.recentQuestions.has(q.id) && 
+        !(excludeIds?.has(q.id)) &&
+        q.category !== 'kids'
       );
     }
 
-    // If we don't have enough non-recent questions, allow some repeats
+    // If we don't have enough non-recent questions, allow some repeats but still exclude already used ones
     if (availableQuestions.length < count) {
       if (category === 'mixed') {
-        availableQuestions = questionPool.filter(q => q.category !== 'kids');
+        availableQuestions = questionPool.filter(q => 
+          q.category !== 'kids' && 
+          !(excludeIds?.has(q.id))
+        );
       } else {
         availableQuestions = questionPool.filter(q => 
-          !category || category === 'mixed' || q.category === category
+          (!category || category === 'mixed' || q.category === category) &&
+          !(excludeIds?.has(q.id))
         );
       }
-      this.recentQuestions.clear(); // Reset recent questions
+      this.recentQuestions.clear(); // Reset recent questions but keep excluded ones
     }
 
     // Shuffle and select
@@ -250,9 +257,9 @@ class QuestionSelector {
 
 const questionSelector = new QuestionSelector();
 
-export const getRandomQuestions = (count: number, category?: string): Question[] => {
-  const questions = questionSelector.selectQuestions(count, category);
-  console.log("getRandomQuestions called:", { count, category, returnedQuestions: questions.length });
+export const getRandomQuestions = (count: number, category?: string, excludeIds?: Set<string>): Question[] => {
+  const questions = questionSelector.selectQuestions(count, category, excludeIds);
+  console.log("getRandomQuestions called:", { count, category, excludeIds: excludeIds?.size, returnedQuestions: questions.length });
   return questions;
 };
 

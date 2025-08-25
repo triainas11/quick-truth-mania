@@ -43,6 +43,7 @@ export interface GameState {
   gamePhase: 'setup' | 'playing' | 'roundEnd' | 'gameEnd' | 'tiebreaker';
   roundsPlayed: number;
   isTiebreaker: boolean;
+  usedQuestionIds: Set<string>;
 }
 
 export const useGameLogic = () => {
@@ -72,7 +73,8 @@ export const useGameLogic = () => {
     },
     gamePhase: 'setup',
     roundsPlayed: 0,
-    isTiebreaker: false
+    isTiebreaker: false,
+    usedQuestionIds: new Set()
   });
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -87,7 +89,7 @@ export const useGameLogic = () => {
       ? { ...settings, timeLimit: 3 }
       : settings;
     
-    const questions = getRandomQuestions(finalSettings.rounds + 3, finalSettings.category === 'mixed' ? 'mixed' : finalSettings.category); // Extra questions for potential tiebreakers
+    const questions = getRandomQuestions(finalSettings.rounds + 5, finalSettings.category === 'mixed' ? 'mixed' : finalSettings.category); // Extra questions for potential tiebreakers
     
     setGameState(prev => {
       const newState = {
@@ -118,7 +120,8 @@ export const useGameLogic = () => {
         isActive: false,
         lastAnswer: null,
         gamePhase: 'playing' as const,
-        isTiebreaker: false
+        isTiebreaker: false,
+        usedQuestionIds: new Set(questions.map(q => q.id))
       };
       console.log("New game state after initialization:", newState);
       return newState;
@@ -532,14 +535,24 @@ export const useGameLogic = () => {
   }, [gameState.currentRound, gameState.totalRounds, gameState.gamePhase]);
 
   const startTiebreaker = useCallback(() => {
-    const tiebreakerQuestion = gameState.questions[gameState.currentRound];
+    // Get a fresh question that hasn't been used in this game
+    const freshQuestions = getRandomQuestions(
+      1, 
+      gameState.settings.category === 'mixed' ? 'mixed' : gameState.settings.category,
+      gameState.usedQuestionIds
+    );
+    
+    const tiebreakerQuestion = freshQuestions[0];
+    
     setGameState(prev => ({
       ...prev,
       currentQuestion: tiebreakerQuestion,
       timeLeft: 5, // Fixed 5 seconds for sudden death
       isActive: true,
       lastAnswer: null,
-      gamePhase: 'playing'
+      gamePhase: 'playing',
+      isTiebreaker: true,
+      usedQuestionIds: new Set([...prev.usedQuestionIds, tiebreakerQuestion.id])
     }));
 
     answerLockRef.current = null;
@@ -578,7 +591,7 @@ export const useGameLogic = () => {
         };
       });
     }, 1000);
-  }, [gameState.questions, gameState.currentRound]);
+  }, [gameState.settings.category, gameState.usedQuestionIds]);
 
   const endGame = useCallback(() => {
     console.log("endGame called, current gameState:", gameState);
@@ -647,7 +660,8 @@ export const useGameLogic = () => {
       winner: null,
       lastAnswer: null,
       gamePhase: 'setup',
-      isTiebreaker: false
+      isTiebreaker: false,
+      usedQuestionIds: new Set()
     }));
   }, []);
 

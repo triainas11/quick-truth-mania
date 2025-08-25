@@ -292,8 +292,11 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
         </div>
         
         <Progress 
-          value={timeProgress} 
-          className="w-full mt-3 h-2" 
+          value={lastAnswer ? timeProgress : timeProgress} 
+          className={cn(
+            "w-full mt-3 h-2",
+            lastAnswer && "transition-none"
+          )}
         />
       </div>
 
