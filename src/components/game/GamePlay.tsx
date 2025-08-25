@@ -89,7 +89,7 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
 
   // Auto-advance timer for round transition screen - MUST be exactly 5 seconds
   useEffect(() => {
-    if (!currentQuestion && gamePhase === 'playing') {
+    if (!currentQuestion && gamePhase === 'playing' && !lastAnswer) {
       console.log("Starting 5-second auto-advance timer for round transition");
       const timer = setTimeout(() => {
         console.log("5-second timer completed - auto-advancing to next round");
@@ -101,7 +101,7 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
         clearTimeout(timer);
       };
     }
-  }, [currentQuestion, gamePhase, onNextRound]);
+  }, [currentQuestion, gamePhase, lastAnswer, onNextRound]);
 
   // Handle rewarded ad for extra life
   const handleRewardedAd = (reward: any) => {
@@ -200,8 +200,8 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
   }
 
 
-  // Round Transition Screen
-  if (!currentQuestion && gamePhase === 'playing') {
+  // Round Transition Screen - Only show when explicitly waiting for next round
+  if (!currentQuestion && gamePhase === 'playing' && !lastAnswer) {
     return (
       <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
         <div className="text-center">
