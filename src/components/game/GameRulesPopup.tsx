@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { GameSettings } from "@/hooks/useGameLogic";
+import type { GameSettings } from "@/types/game";
 import { Trophy, Heart, Zap } from "lucide-react";
 
 interface GameRulesPopupProps {

@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Gamepad2, Users, Timer, Zap, Trophy, Heart, Volume2, Flame, Shuffle } from "lucide-react";
-import { GameSettings } from "@/hooks/useGameLogic";
+import type { GameSettings } from "@/types/game";
 import { categories } from "@/data/questions";
 import GameRulesPopup from "./GameRulesPopup";
 

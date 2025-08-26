@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGameLogic, GameSettings } from "@/hooks/useGameLogic";
+import { useGameLogic } from "@/hooks/useGameLogic";
+import type { GameSettings } from "@/types/game";
 import { useAuth } from "@/hooks/useAuth";
 import GameSetup from "@/components/game/GameSetup";
 import GamePlay from "@/components/game/GamePlay";
@@ -24,10 +25,7 @@ const Game = () => {
   const handleStartGame = (settings: GameSettings) => {
     initializeGame(settings);
     setGameStarted(true);
-    // Start first round after 5 seconds
-    setTimeout(() => {
-      startRound();
-    }, 5000);
+    // Game logic now handles the 5-second delay automatically
   };
 
   const handleNextRound = () => {

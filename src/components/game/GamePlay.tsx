@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Timer, Trophy, Zap } from "lucide-react";
-import { GameState } from "@/hooks/useGameLogic";
+import type { GameState } from "@/types/game";
 import { cn } from "@/lib/utils";
 import { BannerAd } from "@/components/ads/BannerAd";
 import { InterstitialAd } from "@/components/ads/InterstitialAd";
@@ -200,8 +200,8 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
   }
 
 
-  // Round Transition Screen - Only show when explicitly waiting for next round
-  if (!currentQuestion && gamePhase === 'playing' && !lastAnswer) {
+  // Round Transition Screen - Show for roundIntro phase or when waiting for next round
+  if (gamePhase === 'roundIntro' || (!currentQuestion && gamePhase === 'playing' && !lastAnswer)) {
     return (
       <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
         <div className="text-center">

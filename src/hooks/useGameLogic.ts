@@ -1,50 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
-import { Question, getRandomQuestions, resetQuestionHistory } from '@/data/questions';
+import { GameState, GameSettings, LastAnswer, Player } from '@/types/game';
+import { useGameTimer } from '@/hooks/game/useGameTimer';
+import { useGameScoring } from '@/hooks/game/useGameScoring';
+import { useGameQuestions } from '@/hooks/game/useGameQuestions';
+import { GAME_CONFIG, GAME_PHASES } from '@/constants/game';
 import { soundEffects } from '@/utils/soundEffects';
-
-export interface Player {
-  id: 1 | 2;
-  name: string;
-  score: number;
-  lives?: number;
-  streak: number;
-}
-
-export interface GameSettings {
-  rounds: number;
-  category: string;
-  gameMode: 'normal' | 'double-speed' | 'misleading';
-  timeLimit: number;
-  scoreMode: 'points' | 'lives';
-  maxLives: number;
-  streakBonus: boolean;
-  soundEffects: boolean;
-  buttonShuffle: boolean;
-}
-
-export interface LastAnswer {
-  playerId: 1 | 2;
-  answer: boolean;
-  correct: boolean;
-  timestamp: number;
-}
-
-export interface GameState {
-  players: [Player, Player];
-  currentQuestion: Question | null;
-  currentRound: number;
-  totalRounds: number;
-  timeLeft: number;
-  isActive: boolean;
-  winner: Player | null;
-  lastAnswer: LastAnswer | null;
-  questions: Question[];
-  settings: GameSettings;
-  gamePhase: 'setup' | 'playing' | 'roundEnd' | 'gameEnd' | 'tiebreaker';
-  roundsPlayed: number;
-  isTiebreaker: boolean;
-  usedQuestionIds: Set<string>;
-}
 
 export const useGameLogic = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -77,19 +37,29 @@ export const useGameLogic = () => {
     usedQuestionIds: new Set()
   });
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const { 
+    timerRef, 
+    clearAllTimers, 
+    startGameTimer, 
+    startRoundTransition, 
+    startAnswerFeedback, 
+    startTimeoutFeedback 
+  } = useGameTimer();
+  
+  const { updatePlayerScore, updatePlayersForTimeout, determineWinner } = useGameScoring();
+  const { getInitialQuestions, getTiebreakerQuestion } = useGameQuestions();
+  
   const answerLockRef = useRef<{ playerId: 1 | 2; answer: boolean } | null>(null);
 
   const initializeGame = useCallback((settings: GameSettings) => {
     console.log("Initializing game with settings:", settings);
-    resetQuestionHistory(); // Reset question history for new game
     
     // Auto-set time limit for double-speed mode
     const finalSettings = settings.gameMode === 'double-speed' 
       ? { ...settings, timeLimit: 3 }
       : settings;
     
-    const questions = getRandomQuestions(finalSettings.rounds + 5, finalSettings.category === 'mixed' ? 'mixed' : finalSettings.category); // Extra questions for potential tiebreakers
+    const questions = getInitialQuestions(finalSettings.rounds, finalSettings.category);
     
     setGameState(prev => {
       const newState = {
@@ -119,22 +89,26 @@ export const useGameLogic = () => {
         winner: null,
         isActive: false,
         lastAnswer: null,
-        gamePhase: 'playing' as const,
+        gamePhase: 'roundIntro' as const,
         isTiebreaker: false,
         usedQuestionIds: new Set(questions.map(q => q.id))
       };
       console.log("New game state after initialization:", newState);
       return newState;
     });
-  }, []);
+
+    // Start first round transition
+    startRoundTransition(() => {
+      startRound();
+    }, true);
+  }, [startRoundTransition]);
 
   const startRound = useCallback(() => {
     setGameState(prev => {
       console.log("startRound called - currentRound:", prev.currentRound, "questions.length:", prev.questions.length);
       
       if (prev.currentRound >= prev.questions.length) {
-        console.log("No more questions, calling endGame");
-        // Don't call endGame here, just return current state - handle this in the component
+        console.log("No more questions, ending game");
         return {
           ...prev,
           gamePhase: 'gameEnd' as const
@@ -156,149 +130,59 @@ export const useGameLogic = () => {
 
     answerLockRef.current = null;
 
-    // Start timer
-    timerRef.current = setInterval(() => {
-      setGameState(prev => {
-        if (prev.timeLeft <= 1) {
-          // Time's up - both players get it wrong
-          clearInterval(timerRef.current!);
-          
-          // Auto advance after showing feedback
-          setTimeout(() => {
-            setGameState(prevState => {
-              const newRoundsPlayed = prevState.roundsPlayed + 1;
-              const updatedPlayers = [...prevState.players] as [Player, Player];
-              
-              // Both players lose 1 life for timeout
-              updatedPlayers[0].lives = Math.max(0, (updatedPlayers[0].lives || 0) - 1);
-              updatedPlayers[1].lives = Math.max(0, (updatedPlayers[1].lives || 0) - 1);
-              
-              // Check if game should end based on lives mode (KO rule)
-              if (prevState.settings.scoreMode === 'lives') {
-                const alivePlayers = updatedPlayers.filter(p => (p.lives || 0) > 0);
-                if (alivePlayers.length === 1) {
-                  return {
-                    ...prevState,
-                    players: updatedPlayers,
-                    winner: alivePlayers[0],
-                    gamePhase: 'gameEnd'
-                  };
-                } else if (alivePlayers.length === 0) {
-                  // Both players KO'd
-                  return {
-                    ...prevState,
-                    players: updatedPlayers,
-                    winner: null,
-                    gamePhase: 'gameEnd'
-                  };
-                }
+    // Start countdown timer
+    startGameTimer(
+      () => {
+        setGameState(prev => {
+          if (prev.timeLeft <= 1) {
+            clearAllTimers();
+            handleTimeOut();
+            return {
+              ...prev,
+              timeLeft: 0,
+              isActive: false,
+              gamePhase: 'roundEnd' as const,
+              lastAnswer: {
+                playerId: 1,
+                answer: false,
+                correct: false,
+                timestamp: Date.now()
               }
-              
-              // Check if we've completed all rounds
-              if (newRoundsPlayed >= prevState.totalRounds) {
-                console.log("Game completed - checking scores:", { 
-                  player1Score: updatedPlayers[0].score, 
-                  player2Score: updatedPlayers[1].score,
-                  scoreMode: prevState.settings.scoreMode
-                });
-                if (prevState.settings.scoreMode === 'points') {
-                  const [player1, player2] = updatedPlayers;
-                  if (player1.score === player2.score) {
-                    console.log("Scores tied, going to tiebreaker");
-                    return {
-                      ...prevState,
-                      players: updatedPlayers,
-                      gamePhase: 'tiebreaker'
-                    };
-                  } else {
-                    const winner = player1.score > player2.score ? player1 : player2;
-                    console.log("Winner determined:", winner.name);
-                    return {
-                      ...prevState,
-                      players: updatedPlayers,
-                      winner,
-                      gamePhase: 'gameEnd'
-                    };
-                  }
-                } else {
-                  // Lives mode: check points first, then lives
-                  const [player1, player2] = updatedPlayers;
-                  if (player1.score > player2.score) {
-                    return {
-                      ...prevState,
-                      players: updatedPlayers,
-                      winner: player1,
-                      gamePhase: 'gameEnd'
-                    };
-                  } else if (player2.score > player1.score) {
-                    return {
-                      ...prevState,
-                      players: updatedPlayers,
-                      winner: player2,
-                      gamePhase: 'gameEnd'
-                    };
-                  } else {
-                    // Points tied, check lives
-                    const player1Lives = player1.lives || 0;
-                    const player2Lives = player2.lives || 0;
-                    if (player1Lives > player2Lives) {
-                      return {
-                        ...prevState,
-                        players: updatedPlayers,
-                        winner: player1,
-                        gamePhase: 'gameEnd'
-                      };
-                    } else if (player2Lives > player1Lives) {
-                      return {
-                        ...prevState,
-                        players: updatedPlayers,
-                        winner: player2,
-                        gamePhase: 'gameEnd'
-                      };
-                    } else {
-                      // Still tied, sudden death
-                      return {
-                        ...prevState,
-                        players: updatedPlayers,
-                        gamePhase: 'tiebreaker'
-                      };
-                    }
-                  }
-                }
-              }
-
-              // Continue to next round
-              return {
-                ...prevState,
-                players: updatedPlayers,
-                currentRound: prevState.currentRound + 1,
-                roundsPlayed: newRoundsPlayed,
-                currentQuestion: null,
-                gamePhase: 'playing'
-              };
-            });
-          }, 2000); // Show feedback for 2 seconds
-          
+            };
+          }
           return {
             ...prev,
-            timeLeft: 0,
-            isActive: false,
-            gamePhase: 'roundEnd' as const,
-            lastAnswer: {
-              playerId: 1, // Arbitrary since both failed
-              answer: false,
-              correct: false,
-              timestamp: Date.now()
-            }
+            timeLeft: prev.timeLeft - 1
           };
+        });
+      },
+      () => handleTimeOut()
+    );
+  }, [startGameTimer, clearAllTimers]);
+
+  const handleTimeOut = useCallback(() => {
+    startTimeoutFeedback(() => {
+      setGameState(prevState => {
+        const newRoundsPlayed = prevState.roundsPlayed + 1;
+        const updatedPlayers = updatePlayersForTimeout(prevState.players, prevState.settings);
+        
+        // Check if game should end based on lives mode (KO rule)
+        if (prevState.settings.scoreMode === 'lives') {
+          const alivePlayers = updatedPlayers.filter(p => (p.lives || 0) > 0);
+          if (alivePlayers.length <= 1) {
+            return {
+              ...prevState,
+              players: updatedPlayers,
+              winner: alivePlayers.length === 1 ? alivePlayers[0] : null,
+              gamePhase: 'gameEnd' as const
+            };
+          }
         }
-        return {
-          ...prev,
-          timeLeft: prev.timeLeft - 1
-        };
+        
+        return checkGameCompletion(prevState, updatedPlayers, newRoundsPlayed);
       });
-    }, 1000);
-  }, []);
+    });
+  }, [startTimeoutFeedback, updatePlayersForTimeout]);
 
   const submitAnswer = useCallback((playerId: 1 | 2, answer: boolean) => {
     if (!gameState.isActive || !gameState.currentQuestion) return;
@@ -307,17 +191,7 @@ export const useGameLogic = () => {
     if (!answerLockRef.current) {
       answerLockRef.current = { playerId, answer };
       
-      // Check if we're in misleading mode
-      const isMisleadingMode = gameState.settings.gameMode === 'misleading';
-      let correct: boolean;
-      
-      if (isMisleadingMode) {
-        // Misleading mode uses questions from "misleading" category with complex phrasing
-        correct = answer === gameState.currentQuestion.answer;
-      } else {
-        // Normal mode
-        correct = answer === gameState.currentQuestion.answer;
-      }
+      const correct = answer === gameState.currentQuestion.answer;
       
       // Play sound effects
       if (gameState.settings.soundEffects) {
@@ -330,240 +204,118 @@ export const useGameLogic = () => {
       }
       
       setGameState(prev => {
-        const newPlayers = [...prev.players] as [Player, Player];
-        const playerIndex = playerId - 1;
-        const otherPlayerIndex = playerIndex === 0 ? 1 : 0;
+        const newPlayers = updatePlayerScore(prev.players, playerId, correct, prev.settings);
         
-        if (prev.settings.scoreMode === 'lives') {
-          if (!correct) {
-            // Wrong answer: lose 1 life, opponent gains 1 point
-            newPlayers[playerIndex].lives = Math.max(0, (newPlayers[playerIndex].lives || 0) - 1);
-            newPlayers[playerIndex].streak = 0; // Reset streak on wrong answer
-            newPlayers[otherPlayerIndex].score += 1; // Opponent gains point automatically
-            newPlayers[otherPlayerIndex].streak = 0; // Reset opponent's streak too
-          } else {
-            // Correct answer: gain 1 point, no life lost
-            newPlayers[playerIndex].score += 1;
-            newPlayers[playerIndex].streak += 1;
-            newPlayers[otherPlayerIndex].streak = 0; // Reset other player's streak
-            
-            // Check for streak bonus (5+ correct in a row)
-            if (prev.settings.streakBonus && newPlayers[playerIndex].streak >= 5 && newPlayers[playerIndex].streak % 5 === 0) {
-              if (prev.settings.soundEffects) {
-                soundEffects.playStreak();
-              }
-            }
-          }
-        } else {
-          // Points mode
-          if (correct) {
-            let pointsToAdd = 1;
-            newPlayers[playerIndex].streak += 1;
-            
-            // Streak bonus: extra point for every 5 in a row
-            if (prev.settings.streakBonus && newPlayers[playerIndex].streak >= 5 && newPlayers[playerIndex].streak % 5 === 0) {
-              pointsToAdd += 1; // Bonus point
-              if (prev.settings.soundEffects) {
-                soundEffects.playStreak();
-              }
-            }
-            
-            // No bonus for button shuffle
-            
-            newPlayers[playerIndex].score += pointsToAdd;
-          } else {
-            // No point reduction in points mode anymore
-            newPlayers[playerIndex].streak = 0; // Reset streak on wrong answer
-          }
-          // Reset other player's streak
-          newPlayers[otherPlayerIndex].streak = 0;
-        }
-
         return {
           ...prev,
           players: newPlayers,
           isActive: false,
-          gamePhase: 'roundEnd',
+          gamePhase: 'roundEnd' as const,
           lastAnswer: { playerId, answer, correct, timestamp: Date.now() }
         };
       });
 
-      // Clear timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
+      clearAllTimers();
 
       // Handle sudden death logic - immediate win/lose
       if (gameState.gamePhase === 'tiebreaker') {
         const currentPlayerIndex = playerId - 1;
-        const otherPlayerIndexSD = currentPlayerIndex === 0 ? 1 : 0;
+        const otherPlayerIndex = currentPlayerIndex === 0 ? 1 : 0;
         
-        setTimeout(() => {
-          setGameState(prev => {
-            if (correct) {
-              // Correct answer in sudden death = immediate win
-              return {
-                ...prev,
-                winner: prev.players[currentPlayerIndex],
-                gamePhase: 'gameEnd'
-              };
-            } else {
-              // Wrong answer in sudden death = other player wins
-              return {
-                ...prev,
-                winner: prev.players[otherPlayerIndexSD],
-                gamePhase: 'gameEnd'
-              };
-            }
-          });
-        }, 1500);
+        startAnswerFeedback(() => {
+          setGameState(prev => ({
+            ...prev,
+            winner: correct ? prev.players[currentPlayerIndex] : prev.players[otherPlayerIndex],
+            gamePhase: 'gameEnd' as const
+          }));
+        }, correct, true);
         return;
       }
 
-      // Auto advance after showing feedback (immediate for correct, brief delay for wrong)
-      const delay = correct ? 1500 : 2000;
-      setTimeout(() => {
+      // Auto advance after showing feedback
+      startAnswerFeedback(() => {
         setGameState(prev => {
           const newRoundsPlayed = prev.roundsPlayed + 1;
           
           // Check if game should end based on lives mode (KO rule)
           if (prev.settings.scoreMode === 'lives') {
             const alivePlayers = prev.players.filter(p => (p.lives || 0) > 0);
-            if (alivePlayers.length === 1) {
+            if (alivePlayers.length <= 1) {
               return {
                 ...prev,
-                winner: alivePlayers[0],
-                gamePhase: 'gameEnd'
-              };
-            } else if (alivePlayers.length === 0) {
-              // Both players KO'd
-              return {
-                ...prev,
-                winner: null,
-                gamePhase: 'gameEnd'
+                winner: alivePlayers.length === 1 ? alivePlayers[0] : null,
+                gamePhase: 'gameEnd' as const
               };
             }
           }
 
-          // Check if we've completed all rounds
-          if (newRoundsPlayed >= prev.totalRounds) {
-            console.log("Game completed after answer - checking scores:", { 
-              player1Score: prev.players[0].score, 
-              player2Score: prev.players[1].score,
-              scoreMode: prev.settings.scoreMode
-            });
-            if (prev.settings.scoreMode === 'points') {
-              const [player1, player2] = prev.players;
-              if (player1.score === player2.score) {
-                console.log("Scores tied after answer, going to tiebreaker");
-                return {
-                  ...prev,
-                  gamePhase: 'tiebreaker'
-                };
-              } else {
-                const winner = player1.score > player2.score ? player1 : player2;
-                console.log("Winner determined after answer:", winner.name);
-                return {
-                  ...prev,
-                  winner,
-                  gamePhase: 'gameEnd'
-                };
-              }
-            } else {
-              // Lives mode: check points first, then lives
-              const [player1, player2] = prev.players;
-              if (player1.score > player2.score) {
-                return {
-                  ...prev,
-                  winner: player1,
-                  gamePhase: 'gameEnd'
-                };
-              } else if (player2.score > player1.score) {
-                return {
-                  ...prev,
-                  winner: player2,
-                  gamePhase: 'gameEnd'
-                };
-              } else {
-                // Points tied, check lives
-                const player1Lives = player1.lives || 0;
-                const player2Lives = player2.lives || 0;
-                if (player1Lives > player2Lives) {
-                  return {
-                    ...prev,
-                    winner: player1,
-                    gamePhase: 'gameEnd'
-                  };
-                } else if (player2Lives > player1Lives) {
-                  return {
-                    ...prev,
-                    winner: player2,
-                    gamePhase: 'gameEnd'
-                  };
-                } else {
-                  // Still tied, sudden death
-                  return {
-                    ...prev,
-                    gamePhase: 'tiebreaker'
-                  };
-                }
-              }
-            }
-          }
-
-          // Continue to next round
-          return {
-            ...prev,
-            currentRound: prev.currentRound + 1,
-            roundsPlayed: newRoundsPlayed,
-            currentQuestion: null,
-            gamePhase: 'playing'
-          };
+          return checkGameCompletion(prev, prev.players, newRoundsPlayed);
         });
-      }, delay);
+      }, correct);
     }
-  }, [gameState.isActive, gameState.currentQuestion]);
+  }, [gameState.isActive, gameState.currentQuestion, gameState.gamePhase, gameState.settings, updatePlayerScore, clearAllTimers, startAnswerFeedback]);
+
+  const checkGameCompletion = useCallback((
+    state: GameState, 
+    players: [Player, Player], 
+    roundsPlayed: number
+  ): GameState => {
+    // Check if we've completed all rounds
+    if (roundsPlayed >= state.totalRounds) {
+      console.log("Game completed - checking scores");
+      const winner = determineWinner(players, state.settings);
+      
+      if (winner === null) {
+        console.log("Scores tied, going to tiebreaker");
+        return {
+          ...state,
+          players,
+          gamePhase: 'tiebreaker' as const
+        };
+      } else {
+        console.log("Winner determined:", winner.name);
+        return {
+          ...state,
+          players,
+          winner,
+          gamePhase: 'gameEnd' as const
+        };
+      }
+    }
+
+    // Continue to next round
+    return {
+      ...state,
+      players,
+      currentRound: state.currentRound + 1,
+      roundsPlayed,
+      currentQuestion: null,
+      gamePhase: 'roundIntro' as const
+    };
+  }, [determineWinner]);
 
   const nextRound = useCallback(() => {
     if (gameState.gamePhase === 'tiebreaker') {
       startTiebreaker();
+    } else if (gameState.gamePhase === 'roundIntro') {
+      startRoundTransition(() => {
+        startRound();
+      });
     } else if (gameState.currentRound >= gameState.totalRounds) {
       endGame();
     } else {
       startRound();
     }
-  }, [gameState.currentRound, gameState.totalRounds, gameState.gamePhase]);
+  }, [gameState.gamePhase, gameState.currentRound, gameState.totalRounds, startRoundTransition]);
 
   const startTiebreaker = useCallback(() => {
     setGameState(prev => {
-      // Get a fresh question that hasn't been used in this game using current state
-      const usedIds = prev.usedQuestionIds;
-      console.log("Starting tiebreaker - Used question IDs:", Array.from(usedIds));
-      console.log("All game questions:", prev.questions.map(q => q.id));
-      
-      // Get extra questions beyond the original game questions for tiebreaker
-      const extraQuestions = getRandomQuestions(
-        10, // Get more questions to ensure we have fresh ones
-        prev.settings.category === 'mixed' ? 'mixed' : prev.settings.category,
-        usedIds
-      );
-      
-      if (extraQuestions.length === 0) {
-        console.error("No fresh questions available for tiebreaker!");
-        // Reset question history as last resort
-        resetQuestionHistory();
-        const fallbackQuestions = getRandomQuestions(1, prev.settings.category === 'mixed' ? 'mixed' : prev.settings.category);
-        extraQuestions.push(fallbackQuestions[0]);
-      }
-      
-      const tiebreakerQuestion = extraQuestions[0];
-      console.log("Selected tiebreaker question:", tiebreakerQuestion.id, "-", tiebreakerQuestion.statement);
+      const tiebreakerQuestion = getTiebreakerQuestion(prev.settings.category, prev.usedQuestionIds);
       
       return {
         ...prev,
         currentQuestion: tiebreakerQuestion,
-        timeLeft: 5, // Fixed 5 seconds for sudden death
+        timeLeft: GAME_CONFIG.SUDDEN_DEATH_TIME,
         isActive: true,
         lastAnswer: null,
         gamePhase: 'playing' as const,
@@ -575,86 +327,62 @@ export const useGameLogic = () => {
     answerLockRef.current = null;
 
     // Start timer for sudden death
-    timerRef.current = setInterval(() => {
-      setGameState(prev => {
-        if (prev.timeLeft <= 1) {
-          clearInterval(timerRef.current!);
-          
-          // Auto advance after showing "YOU BOTH LOST"
-          setTimeout(() => {
-            setGameState(prevState => ({
-              ...prevState,
-              gamePhase: 'gameEnd',
-              winner: null // Both lost
-            }));
-          }, 2000);
-          
+    startGameTimer(
+      () => {
+        setGameState(prev => {
+          if (prev.timeLeft <= 1) {
+            clearAllTimers();
+            
+            startTimeoutFeedback(() => {
+              setGameState(prevState => ({
+                ...prevState,
+                gamePhase: 'gameEnd' as const,
+                winner: null // Both lost
+              }));
+            });
+            
+            return {
+              ...prev,
+              timeLeft: 0,
+              isActive: false,
+              gamePhase: 'roundEnd' as const,
+              lastAnswer: {
+                playerId: 1,
+                answer: false,
+                correct: false,
+                timestamp: Date.now()
+              }
+            };
+          }
           return {
             ...prev,
-            timeLeft: 0,
-            isActive: false,
-            gamePhase: 'roundEnd',
-            lastAnswer: {
-              playerId: 1, // Arbitrary
-              answer: false,
-              correct: false,
-              timestamp: Date.now()
-            }
+            timeLeft: prev.timeLeft - 1
           };
-        }
-        return {
-          ...prev,
-          timeLeft: prev.timeLeft - 1
-        };
-      });
-    }, 1000);
-  }, []);
+        });
+      },
+      () => {} // Timer completion handled in tick function
+    );
+  }, [getTiebreakerQuestion, startGameTimer, clearAllTimers, startTimeoutFeedback]);
 
   const endGame = useCallback(() => {
     console.log("endGame called, current gameState:", gameState);
-    const [player1, player2] = gameState.players;
-    let winner: Player | null = null;
-    
-    if (gameState.settings.scoreMode === 'lives') {
-      const alivePlayers = gameState.players.filter(p => (p.lives || 0) > 0);
-      if (alivePlayers.length === 1) {
-        winner = alivePlayers[0];
-      }
-    } else {
-      if (player1.score > player2.score) {
-        winner = player1;
-      } else if (player2.score > player1.score) {
-        winner = player2;
-      }
-      // winner stays null for ties
-    }
+    const winner = determineWinner(gameState.players, gameState.settings);
 
-    console.log("endGame setting winner:", winner, "scores:", player1.score, player2.score);
+    console.log("endGame setting winner:", winner);
 
     setGameState(prev => ({
       ...prev,
       winner,
       isActive: false,
-      gamePhase: 'gameEnd'
+      gamePhase: 'gameEnd' as const
     }));
 
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, [gameState.players, gameState.settings.scoreMode]);
+    clearAllTimers();
+  }, [gameState.players, gameState.settings, determineWinner, clearAllTimers]);
 
   const resetGame = useCallback(() => {
-    // Clear all timers to prevent overlapping
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    
-    // Clear answer lock
+    clearAllTimers();
     answerLockRef.current = null;
-    
-    resetQuestionHistory();
     
     setGameState(prev => ({
       ...prev,
@@ -680,12 +408,12 @@ export const useGameLogic = () => {
       isActive: false,
       winner: null,
       lastAnswer: null,
-      gamePhase: 'setup',
+      gamePhase: 'setup' as const,
       isTiebreaker: false,
       usedQuestionIds: new Set(),
       timeLeft: prev.settings.timeLimit
     }));
-  }, []);
+  }, [clearAllTimers]);
 
   return {
     gameState,
