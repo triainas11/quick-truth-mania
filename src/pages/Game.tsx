@@ -24,10 +24,10 @@ const Game = () => {
   const handleStartGame = (settings: GameSettings) => {
     initializeGame(settings);
     setGameStarted(true);
-    // Start first round after a short delay
+    // Start first round after 5 seconds
     setTimeout(() => {
       startRound();
-    }, 1000);
+    }, 5000);
   };
 
   const handleNextRound = () => {

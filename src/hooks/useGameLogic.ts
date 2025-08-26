@@ -540,21 +540,24 @@ export const useGameLogic = () => {
       // Get a fresh question that hasn't been used in this game using current state
       const usedIds = prev.usedQuestionIds;
       console.log("Starting tiebreaker - Used question IDs:", Array.from(usedIds));
+      console.log("All game questions:", prev.questions.map(q => q.id));
       
-      const freshQuestions = getRandomQuestions(
-        1, 
+      // Get extra questions beyond the original game questions for tiebreaker
+      const extraQuestions = getRandomQuestions(
+        10, // Get more questions to ensure we have fresh ones
         prev.settings.category === 'mixed' ? 'mixed' : prev.settings.category,
         usedIds
       );
       
-      if (freshQuestions.length === 0) {
+      if (extraQuestions.length === 0) {
         console.error("No fresh questions available for tiebreaker!");
-        // Fallback - get any question
+        // Reset question history as last resort
+        resetQuestionHistory();
         const fallbackQuestions = getRandomQuestions(1, prev.settings.category === 'mixed' ? 'mixed' : prev.settings.category);
-        freshQuestions.push(fallbackQuestions[0]);
+        extraQuestions.push(fallbackQuestions[0]);
       }
       
-      const tiebreakerQuestion = freshQuestions[0];
+      const tiebreakerQuestion = extraQuestions[0];
       console.log("Selected tiebreaker question:", tiebreakerQuestion.id, "-", tiebreakerQuestion.statement);
       
       return {
@@ -642,10 +645,14 @@ export const useGameLogic = () => {
   }, [gameState.players, gameState.settings.scoreMode]);
 
   const resetGame = useCallback(() => {
+    // Clear all timers to prevent overlapping
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    
+    // Clear answer lock
+    answerLockRef.current = null;
     
     resetQuestionHistory();
     
@@ -675,7 +682,8 @@ export const useGameLogic = () => {
       lastAnswer: null,
       gamePhase: 'setup',
       isTiebreaker: false,
-      usedQuestionIds: new Set()
+      usedQuestionIds: new Set(),
+      timeLeft: prev.settings.timeLimit
     }));
   }, []);
 
