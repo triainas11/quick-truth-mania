@@ -91,7 +91,7 @@ export const useGameLogic = () => {
         lastAnswer: null,
         gamePhase: 'roundIntro' as const,
         isTiebreaker: false,
-        usedQuestionIds: new Set(questions.map(q => q.id))
+        usedQuestionIds: new Set<string>()
       };
       console.log("New game state after initialization:", newState);
       return newState;
@@ -312,8 +312,8 @@ export const useGameLogic = () => {
     setGameState(prev => {
       let tiebreakerQuestion = getTiebreakerQuestion(prev.settings.category, prev.usedQuestionIds);
       
-      // Ensure the tiebreaker question is different from the current question
-      while (tiebreakerQuestion.id === prev.currentQuestion?.id) {
+      // Ensure the tiebreaker question is fresh and different from current question
+      while (tiebreakerQuestion.id === prev.currentQuestion?.id || prev.usedQuestionIds.has(tiebreakerQuestion.id)) {
         tiebreakerQuestion = getTiebreakerQuestion(prev.settings.category, prev.usedQuestionIds);
       }
       
