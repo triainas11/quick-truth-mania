@@ -23,26 +23,23 @@ const Game = () => {
   } = useGameLogic();
 
   const handleStartGame = (settings: GameSettings) => {
-    // Ensure clean state before starting new game
-    resetGame();
     initializeGame(settings);
     setGameStarted(true);
     // Game logic now handles the 5-second delay automatically
   };
 
-  // Remove local handler - pass nextRound directly to ensure proper transitions
+  const handleNextRound = () => {
+    if (gameState.currentRound >= gameState.totalRounds) {
+      endGame();
+    } else {
+      startRound();
+    }
+  };
 
   const handleEndGame = () => {
     // Game will automatically show winner screen
     endGame();
   };
-
-  // Cleanup on component unmount or navigation away
-  useEffect(() => {
-    return () => {
-      resetGame();
-    };
-  }, [resetGame]);
 
   if (!gameStarted) {
     return (
@@ -50,10 +47,7 @@ const Game = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => {
-            resetGame(); // Clean up game state when going back
-            navigate("/");
-          }}
+          onClick={() => navigate("/")}
           className="absolute top-4 left-4 z-10"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -66,22 +60,19 @@ const Game = () => {
 
   return (
     <div className="relative">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            resetGame(); // Clean up game state when going back
-            navigate("/");
-          }}
-          className="absolute top-4 left-4 z-10"
-        >
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate("/")}
+        className="absolute top-4 left-4 z-10"
+      >
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back to Home
       </Button>
       <GamePlay
         gameState={gameState}
         onPlayerAnswer={submitAnswer}
-        onNextRound={nextRound}
+        onNextRound={handleNextRound}
         onEndGame={handleEndGame}
       />
     </div>

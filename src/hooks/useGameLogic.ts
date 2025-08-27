@@ -97,8 +97,11 @@ export const useGameLogic = () => {
       return newState;
     });
 
-    // Do not auto-start - wait for nextRound() or auto-fallback
-  }, []);
+    // Start first round transition
+    startRoundTransition(() => {
+      startRound();
+    }, true);
+  }, [startRoundTransition]);
 
   const startRound = useCallback(() => {
     setGameState(prev => {
@@ -153,7 +156,7 @@ export const useGameLogic = () => {
           };
         });
       },
-      () => {} // Timer completion handled in tick function
+      () => handleTimeOut()
     );
   }, [startGameTimer, clearAllTimers]);
 
@@ -292,24 +295,18 @@ export const useGameLogic = () => {
   }, [determineWinner]);
 
   const nextRound = useCallback(() => {
-    // Prevent multiple calls if game is already ending
-    if (gameState.gamePhase === 'gameEnd') {
-      return;
-    }
-
     if (gameState.gamePhase === 'tiebreaker') {
       startTiebreaker();
     } else if (gameState.gamePhase === 'roundIntro') {
       startRoundTransition(() => {
         startRound();
       });
-    } else if (gameState.roundsPlayed >= gameState.totalRounds) {
-      // Use roundsPlayed instead of currentRound for accurate completion check
+    } else if (gameState.currentRound >= gameState.totalRounds) {
       endGame();
     } else {
       startRound();
     }
-  }, [gameState.gamePhase, gameState.roundsPlayed, gameState.totalRounds, startRound, startRoundTransition]);
+  }, [gameState.gamePhase, gameState.currentRound, gameState.totalRounds, startRoundTransition]);
 
   const startTiebreaker = useCallback(() => {
     setGameState(prev => {
@@ -336,19 +333,12 @@ export const useGameLogic = () => {
           if (prev.timeLeft <= 1) {
             clearAllTimers();
             
-            // Handle tiebreaker timeout - both players lose
             startTimeoutFeedback(() => {
-              setGameState(prevState => {
-                // Prevent duplicate endGame calls
-                if (prevState.gamePhase === 'gameEnd') {
-                  return prevState;
-                }
-                return {
-                  ...prevState,
-                  gamePhase: 'gameEnd' as const,
-                  winner: null // Both lost
-                };
-              });
+              setGameState(prevState => ({
+                ...prevState,
+                gamePhase: 'gameEnd' as const,
+                winner: null // Both lost
+              }));
             });
             
             return {
@@ -375,11 +365,6 @@ export const useGameLogic = () => {
   }, [getTiebreakerQuestion, startGameTimer, clearAllTimers, startTimeoutFeedback]);
 
   const endGame = useCallback(() => {
-    // Prevent multiple endGame calls
-    if (gameState.gamePhase === 'gameEnd') {
-      return;
-    }
-
     console.log("endGame called, current gameState:", gameState);
     const winner = determineWinner(gameState.players, gameState.settings);
 
@@ -393,46 +378,41 @@ export const useGameLogic = () => {
     }));
 
     clearAllTimers();
-  }, [gameState.gamePhase, gameState.players, gameState.settings, determineWinner, clearAllTimers]);
+  }, [gameState.players, gameState.settings, determineWinner, clearAllTimers]);
 
   const resetGame = useCallback(() => {
-    console.log("resetGame called - clearing all state");
     clearAllTimers();
     answerLockRef.current = null;
     
-    // Reset question history to ensure fresh questions for new games
-    const { resetQuestionHistory } = require('@/data/questions');
-    resetQuestionHistory();
-    
-    setGameState({
+    setGameState(prev => ({
+      ...prev,
+      currentRound: 0,
+      roundsPlayed: 0,
       players: [
-        { id: 1, name: "Player 1", score: 0, streak: 0 },
-        { id: 2, name: "Player 2", score: 0, streak: 0 }
+        { 
+          id: 1, 
+          name: "Player 1", 
+          score: 0,
+          streak: 0,
+          lives: prev.settings.scoreMode === 'lives' ? prev.settings.maxLives : undefined
+        },
+        { 
+          id: 2, 
+          name: "Player 2", 
+          score: 0,
+          streak: 0,
+          lives: prev.settings.scoreMode === 'lives' ? prev.settings.maxLives : undefined
+        }
       ],
       currentQuestion: null,
-      currentRound: 0,
-      totalRounds: 5,
-      timeLeft: 10,
       isActive: false,
       winner: null,
       lastAnswer: null,
-      questions: [],
-      settings: {
-        rounds: 5,
-        category: 'general',
-        gameMode: 'normal',
-        timeLimit: 10,
-        scoreMode: 'points',
-        maxLives: 3,
-        streakBonus: true,
-        soundEffects: true,
-        buttonShuffle: false
-      },
       gamePhase: 'setup' as const,
-      roundsPlayed: 0,
       isTiebreaker: false,
-      usedQuestionIds: new Set()
-    });
+      usedQuestionIds: new Set(),
+      timeLeft: prev.settings.timeLimit
+    }));
   }, [clearAllTimers]);
 
   return {

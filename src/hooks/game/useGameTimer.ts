@@ -23,16 +23,8 @@ export const useGameTimer = () => {
   }, []);
 
   const startRoundTransition = useCallback((onComplete: () => void, isFirstRound: boolean = false) => {
-    // Clear any existing transition timer first
-    if (roundTransitionTimerRef.current) {
-      clearTimeout(roundTransitionTimerRef.current);
-      roundTransitionTimerRef.current = null;
-    }
-    
     const delay = isFirstRound ? GAME_DELAYS.FIRST_ROUND_START : GAME_DELAYS.ROUND_TRANSITION;
     roundTransitionTimerRef.current = setTimeout(() => {
-      // Clear transition lock/overlay when callback runs
-      roundTransitionTimerRef.current = null;
       onComplete();
     }, delay);
   }, []);
