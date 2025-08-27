@@ -98,7 +98,7 @@ export const useGameLogic = () => {
     });
 
     // Do not auto-start - wait for nextRound() or auto-fallback
-  }, [startRoundTransition]);
+  }, []);
 
   const startRound = useCallback(() => {
     setGameState(prev => {
