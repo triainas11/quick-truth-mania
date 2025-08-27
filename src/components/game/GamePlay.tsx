@@ -330,13 +330,13 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
                   variant="action"
                   size="lg"
                   className={cn(
-                    "w-full h-20 text-2xl md:text-4xl font-black shadow-energy touch-manipulation select-none active:scale-95 transition-transform",
+                    "w-full h-24 text-4xl font-black shadow-energy",
                     lastAnswer?.playerId === 1 && lastAnswer?.answer === true && "animate-pulse",
                     lastAnswer?.playerId === 1 && lastAnswer?.correct === true && "bg-secondary",
                     lastAnswer?.playerId === 1 && lastAnswer?.correct === false && "bg-destructive"
                   )}
                 >
-                  <Check className="mr-2 md:mr-4 w-6 h-6 md:w-8 md:h-8" />
+                  <Check className="mr-4 w-8 h-8" />
                   YES
                 </Button>
                 
@@ -346,13 +346,13 @@ const GamePlay = ({ gameState, onPlayerAnswer, onNextRound, onEndGame }: GamePla
                   variant="destructive"
                   size="lg"
                   className={cn(
-                    "w-full h-20 text-2xl md:text-4xl font-black touch-manipulation select-none active:scale-95 transition-transform",
+                    "w-full h-24 text-4xl font-black",
                     lastAnswer?.playerId === 1 && lastAnswer?.answer === false && "animate-pulse",
                     lastAnswer?.playerId === 1 && lastAnswer?.correct === true && "bg-secondary",
                     lastAnswer?.playerId === 1 && lastAnswer?.correct === false && "bg-destructive"
                   )}
                 >
-                  <X className="mr-2 md:mr-4 w-6 h-6 md:w-8 md:h-8" />
+                  <X className="mr-4 w-8 h-8" />
                   NO
                 </Button>
               </>

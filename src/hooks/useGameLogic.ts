@@ -310,7 +310,12 @@ export const useGameLogic = () => {
 
   const startTiebreaker = useCallback(() => {
     setGameState(prev => {
-      const tiebreakerQuestion = getTiebreakerQuestion(prev.settings.category, prev.usedQuestionIds);
+      let tiebreakerQuestion = getTiebreakerQuestion(prev.settings.category, prev.usedQuestionIds);
+      
+      // Ensure the tiebreaker question is different from the current question
+      while (tiebreakerQuestion.id === prev.currentQuestion?.id) {
+        tiebreakerQuestion = getTiebreakerQuestion(prev.settings.category, prev.usedQuestionIds);
+      }
       
       return {
         ...prev,
