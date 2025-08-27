@@ -30,10 +30,7 @@ const Game = () => {
     // Game logic now handles the 5-second delay automatically
   };
 
-  const handleNextRound = () => {
-    // Use nextRound from useGameLogic instead of custom logic to avoid inconsistencies
-    nextRound();
-  };
+  // Remove local handler - pass nextRound directly to ensure proper transitions
 
   const handleEndGame = () => {
     // Game will automatically show winner screen
@@ -84,7 +81,7 @@ const Game = () => {
       <GamePlay
         gameState={gameState}
         onPlayerAnswer={submitAnswer}
-        onNextRound={handleNextRound}
+        onNextRound={nextRound}
         onEndGame={handleEndGame}
       />
     </div>
