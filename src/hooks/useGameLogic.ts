@@ -303,16 +303,15 @@ export const useGameLogic = () => {
     if (gameState.gamePhase === 'tiebreaker') {
       startTiebreaker();
     } else if (gameState.gamePhase === 'roundIntro') {
-      startRoundTransition(() => {
-        startRound();
-      });
+      // Directly start the round without additional transition for roundIntro
+      startRound();
     } else if (gameState.roundsPlayed >= gameState.totalRounds) {
       // Use roundsPlayed instead of currentRound for accurate completion check
       endGame();
     } else {
       startRound();
     }
-  }, [gameState.gamePhase, gameState.roundsPlayed, gameState.totalRounds, startRoundTransition]);
+  }, [gameState.gamePhase, gameState.roundsPlayed, gameState.totalRounds, startRound]);
 
   const startTiebreaker = useCallback(() => {
     setGameState(prev => {
