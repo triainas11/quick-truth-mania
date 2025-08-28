@@ -10,15 +10,22 @@ export const useGameQuestions = () => {
 
   const getTiebreakerQuestion = useCallback((
     category: string, 
-    usedQuestionIds: Set<string>
+    usedQuestionIds: Set<string>,
+    lastQuestionId?: string
   ): Question => {
     console.log("Getting tiebreaker question - Used question IDs:", Array.from(usedQuestionIds));
+    
+    // Create a combined set of IDs to exclude
+    const excludedIds = new Set(usedQuestionIds);
+    if (lastQuestionId) {
+      excludedIds.add(lastQuestionId);
+    }
     
     // Get extra questions beyond the original game questions for tiebreaker
     const extraQuestions = getRandomQuestions(
       GAME_CONFIG.EXTRA_QUESTIONS_FOR_TIEBREAKER, 
       category === 'mixed' ? 'mixed' : category,
-      usedQuestionIds
+      excludedIds
     );
     
     if (extraQuestions.length === 0) {
