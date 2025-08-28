@@ -124,6 +124,7 @@ export const useGameLogic = () => {
         isActive: true,
         lastAnswer: null,
         gamePhase: 'playing' as const,
+        // Mark current question as used when the round starts
         usedQuestionIds: new Set([...prev.usedQuestionIds, question.id])
       };
     });
@@ -226,6 +227,7 @@ export const useGameLogic = () => {
           setGameState(prev => ({
             ...prev,
             winner: correct ? prev.players[currentPlayerIndex] : prev.players[otherPlayerIndex],
+            currentQuestion: null,
             gamePhase: 'gameEnd' as const
           }));
         }, correct, true);
@@ -244,6 +246,7 @@ export const useGameLogic = () => {
               return {
                 ...prev,
                 winner: alivePlayers.length === 1 ? alivePlayers[0] : null,
+                currentQuestion: null,
                 gamePhase: 'gameEnd' as const
               };
             }
@@ -260,6 +263,8 @@ export const useGameLogic = () => {
     players: [Player, Player], 
     roundsPlayed: number
   ): GameState => {
+    console.log("checkGameCompletion - roundsPlayed:", roundsPlayed, "totalRounds:", state.totalRounds);
+    
     // Check if we've completed all rounds
     if (roundsPlayed >= state.totalRounds) {
       console.log("Game completed - checking scores");
@@ -267,10 +272,15 @@ export const useGameLogic = () => {
       
       if (winner === null) {
         console.log("Scores tied, going to tiebreaker");
+        // For tiebreaker, we need to clear current question and prepare for sudden death
         return {
           ...state,
           players,
-          gamePhase: 'tiebreaker' as const
+          currentQuestion: null,
+          currentRound: state.currentRound, // Don't increment for tiebreaker
+          roundsPlayed,
+          gamePhase: 'tiebreaker' as const,
+          isTiebreaker: true
         };
       } else {
         console.log("Winner determined:", winner.name);
@@ -278,16 +288,18 @@ export const useGameLogic = () => {
           ...state,
           players,
           winner,
+          currentQuestion: null,
           gamePhase: 'gameEnd' as const
         };
       }
     }
 
-    // Continue to next round
+    // Continue to next round - increment currentRound and set up for round transition
+    console.log("Continuing to next round:", state.currentRound + 1);
     return {
       ...state,
       players,
-      currentRound: state.currentRound + 1,
+      currentRound: state.currentRound + 1, // This ensures currentRound increments correctly
       roundsPlayed,
       currentQuestion: null,
       gamePhase: 'roundIntro' as const
@@ -295,9 +307,12 @@ export const useGameLogic = () => {
   }, [determineWinner]);
 
   const nextRound = useCallback(() => {
+    console.log("nextRound called - gamePhase:", gameState.gamePhase, "currentRound:", gameState.currentRound);
+    
     if (gameState.gamePhase === 'tiebreaker') {
       startTiebreaker();
     } else if (gameState.gamePhase === 'roundIntro') {
+      // Start round transition, then start the actual round
       startRoundTransition(() => {
         startRound();
       });
@@ -310,7 +325,16 @@ export const useGameLogic = () => {
 
   const startTiebreaker = useCallback(() => {
     setGameState(prev => {
-      const tiebreakerQuestion = getTiebreakerQuestion(prev.settings.category, prev.usedQuestionIds, prev.currentQuestion?.id);
+      // Get a truly fresh tiebreaker question that's different from all used questions
+      const tiebreakerQuestion = getTiebreakerQuestion(
+        prev.settings.category, 
+        prev.usedQuestionIds, 
+        prev.currentQuestion?.id
+      );
+      
+      console.log("Starting tiebreaker with question:", tiebreakerQuestion.id);
+      console.log("Previous question was:", prev.currentQuestion?.id);
+      console.log("Used question IDs:", Array.from(prev.usedQuestionIds));
       
       return {
         ...prev,
@@ -320,6 +344,7 @@ export const useGameLogic = () => {
         lastAnswer: null,
         gamePhase: 'playing' as const,
         isTiebreaker: true,
+        // Add tiebreaker question to used questions
         usedQuestionIds: new Set([...prev.usedQuestionIds, tiebreakerQuestion.id])
       };
     });
@@ -337,6 +362,7 @@ export const useGameLogic = () => {
               setGameState(prevState => ({
                 ...prevState,
                 gamePhase: 'gameEnd' as const,
+                currentQuestion: null,
                 winner: null // Both lost
               }));
             });
